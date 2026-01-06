@@ -114,15 +114,26 @@
       color: #3498db;
       padding: 8px 20px;
       border-radius: 20px;
-      margin-top: 20px;
+      margin-top: 10px;
       cursor: pointer;
       font-size: 0.8rem;
       transition: 0.3s;
+      width: 80%;
     }
 
     .btn-sync:hover {
       background: #3498db;
       color: white;
+    }
+
+    .btn-logout {
+      margin-top: 10px;
+      color: #e74c3c;
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
     }
 
     .install-banner {
@@ -136,14 +147,30 @@
       text-align: center;
       cursor: pointer;
     }
+
+    .user-welcome {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
 <body>
 
+  <script>
+    // AUTH CHECK
+    const user = localStorage.getItem('user_token');
+    if (!user) {
+      window.location.href = 'Login.html';
+    }
+    const userData = JSON.parse(user || '{}');
+  </script>
+
   <div class="container">
     <img src="icon.png" alt="Logo" class="logo">
     <h1>Louvor App</h1>
+    <div class="user-welcome">Olá, <span id="userName">...</span></div>
 
     <div id="syncStatus" class="sync-status">
       <div class="progress-track">
@@ -182,6 +209,7 @@
     <button class="btn-sync" onclick="syncAllData()">
       <i class="fas fa-sync"></i> Atualizar Tudo
     </button>
+    <button class="btn-logout" onclick="logout()">Sair</button>
   </div>
 
   <div id="installBanner" class="install-banner">
@@ -238,6 +266,18 @@
 
         localStorage.setItem('last_full_sync', new Date().toISOString());
 
+        // Show System Notification
+        if (Notification.permission === 'granted') {
+          try {
+            const notif = new Notification("Louvor App", {
+              body: "Todos os dados foram atualizados com sucesso!",
+              icon: "icon.png",
+              vibrate: [200, 100, 200]
+            });
+            setTimeout(() => notif.close(), 5000);
+          } catch (e) { }
+        }
+
         updateProgress(100, "Dados Atualizados!");
         setTimeout(() => {
           statusBox.style.display = 'none';
@@ -251,9 +291,23 @@
       }
     }
 
-    // Auto-Sync on first load logic (optional)
-    // Auto-Sync on first load logic
+    function logout() {
+      if (confirm("Deseja sair?")) {
+        localStorage.removeItem('user_token');
+        window.location.href = 'Login.html';
+      }
+    }
+
+    // Auto-Sync on first load
     window.onload = () => {
+      // Set User Name
+      if (userData.Nome) document.getElementById('userName').innerText = userData.Nome.split(' ')[0];
+
+      // Request Notification Permission
+      if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+
       if (!localStorage.getItem('last_full_sync')) {
         syncAllData();
       }

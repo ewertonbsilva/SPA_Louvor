@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Louvor App</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 20%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            border-color: #3498db;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background: #2980b9;
+        }
+
+        .btn-login:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <img src="icon.png" alt="Logo" class="logo">
+        <h2>Bem-vindo</h2>
+
+        <div class="input-group">
+            <label for="user">Nome (Conforme Planilha)</label>
+            <input type="text" id="user" placeholder="Ex: João Silva">
+        </div>
+
+        <div class="input-group">
+            <label for="pass">Senha</label>
+            <input type="password" id="pass" placeholder="******">
+        </div>
+
+        <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+
+        <div id="loader" class="loading"><i class="fas fa-spinner fa-spin"></i> Verificando...</div>
+        <div id="errorMsg" class="error-msg">Usuário ou senha incorretos.</div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjwn6-sdv8f4BLLwaqQWPc4yNI8CS40gO8J77GrJDqLncENJncWIfAV-FBkZuZP6k/exec";
+
+        // Se já estiver logado, redireciona
+        if (localStorage.getItem('user_token')) {
+            window.location.href = 'index.html';
+        }
+
+        async function fazerLogin() {
+            const userField = document.getElementById('user');
+            const passField = document.getElementById('pass');
+            const btn = document.querySelector('.btn-login');
+            const loader = document.getElementById('loader');
+            const errorMsg = document.getElementById('errorMsg');
+
+            const user = userField.value.trim();
+            const pass = passField.value.trim();
+
+            if (!user || !pass) {
+                alert("Preencha todos os campos.");
+                return;
+            }
+
+            btn.disabled = true;
+            loader.style.display = 'block';
+            errorMsg.style.display = 'none';
+
+            try {
+                // Busca a lista de componentes
+                // OBS: Isso baixa a lista inteira. Idealmente, o script deveria validar, mas faremos localmente conforme solicitado.
+                const response = await fetch(SCRIPT_URL + "?sheet=Componentes");
+                const json = await response.json();
+
+                // Verifica se existe usuário e senha compatíveis
+                const usuarioValido = json.data.find(c => {
+                    // Normaliza nomes para comparar (remove espaços extras e case insensitive)
+                    const nomePlanilha = (c.Nome || "").trim().toLowerCase();
+                    const nomeInput = user.toLowerCase();
+                    const senhaPlanilha = (c.Senha || "").toString().trim(); // Assume coluna "Senha"
+
+                    return nomePlanilha === nomeInput && senhaPlanilha === pass;
+                });
+
+                if (usuarioValido) {
+                    localStorage.setItem('user_token', JSON.stringify(usuarioValido)); // Salva sessão
+                    localStorage.setItem('offline_componentes', JSON.stringify(json.data)); // Já aproveita e salva cache
+                    window.location.href = 'index.html';
+                } else {
+                    errorMsg.style.display = 'block';
+                    btn.disabled = false;
+                    loader.style.display = 'none';
+                }
+
+            } catch (e) {
+                alert("Erro de conexão. Tente novamente.");
+                console.error(e);
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
