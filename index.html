@@ -206,9 +206,27 @@
     };
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('serviceWorker.js')
-        .then(() => console.log('Service Worker Registrado!'))
-        .catch((err) => console.log('Erro Service Worker:', err));
+      navigator.serviceWorker.register('serviceWorker.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateToast();
+            }
+          });
+        });
+      }).catch((err) => console.log('Erro Service Worker:', err));
+    }
+
+    function showUpdateToast() {
+      const toast = document.createElement('div');
+      Object.assign(toast.style, {
+        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+        background: '#333', color: '#fff', padding: '10px 20px', borderRadius: '8px',
+        zIndex: '9999', display: 'flex', gap: '15px', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+      });
+      toast.innerHTML = `<span>Nova versão disponível!</span> <button onclick="window.location.reload()" style="background:#3498db;border:none;color:white;padding:5px 12px;border-radius:4px;cursor:pointer">Atualizar</button>`;
+      document.body.appendChild(toast);
     }
 
     let deferredPrompt;
@@ -221,9 +239,6 @@
         banner.style.display = 'none';
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          }
           deferredPrompt = null;
         });
       });
