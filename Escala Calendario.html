@@ -523,8 +523,11 @@
 
       // Limita às próximas 10 para não ficar gigante
       minhasEscalas.slice(0, 10).forEach(e => {
-        const d = new Date(e.Data + "T12:00:00");
-        const dataFormatada = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        // Correção de parsing de data: pega apenas a parte YYYY-MM-DD
+        const dataBase = e.Data.includes('T') ? e.Data.split('T')[0] : e.Data;
+        const d = new Date(dataBase + "T12:00:00");
+
+        const dataFormatada = isNaN(d.getTime()) ? "DATA INVÁLIDA" : d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
 
         const item = document.createElement('div');
         item.className = 'export-item';

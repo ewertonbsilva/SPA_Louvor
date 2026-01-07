@@ -333,8 +333,8 @@
       if (userData.Nome) document.getElementById('userName').innerText = userData.Nome.split(' ')[0];
       updateLastUpdateText();
       checkSession();
-      // Sempre roda sync em background ao abrir
-      backgroundSync();
+      // Espera 1 segundo para rodar sync em background para não travar a UI inicial
+      setTimeout(backgroundSync, 1000);
     };
 
     if ('serviceWorker' in navigator) {

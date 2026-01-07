@@ -236,7 +236,8 @@
     <button class="nav-btn" onclick="loadData(true)"><i class="fas fa-sync-alt"></i></button>
   </div>
 
-  <div id="loader" class="loading"><i class="fas fa-list-ul fa-spin"></i> Organizando por Tema e Estilo...</div>
+  <div id="loader" class="loading" style="display:none"><i class="fas fa-list-ul fa-spin"></i> Organizando por Tema e
+    Estilo...</div>
   <div id="main-content" class="container"></div>
 
   <script>
@@ -249,10 +250,10 @@
 
       if (!force && cached) {
         renderAccordion(JSON.parse(cached));
-        loader.style.display = 'none';
         return;
       }
 
+      // Se não tiver cache ou for forçado, mostra loader
       loader.style.display = 'block';
       loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando...';
 

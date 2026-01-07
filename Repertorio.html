@@ -237,7 +237,8 @@
     </div>
 
     <div id="repertorioAgrupado">
-      <div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando escalas...</div>
+      <div id="loader" class="loading" style="display:none"><i class="fas fa-spinner fa-spin"></i> Carregando escalas...
+      </div>
     </div>
   </div>
 
@@ -246,6 +247,7 @@
 
     async function carregarRepertorio(force = false) {
       const container = document.getElementById('repertorioAgrupado');
+      const loader = document.getElementById('loader');
       const cached = localStorage.getItem('offline_repertorio');
 
       if (!force && cached) {
@@ -253,7 +255,8 @@
         return;
       }
 
-      container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Atualizando...</div>';
+      loader.style.display = 'block';
+      loader.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
 
       try {
         const response = await fetch(SCRIPT_URL + "?sheet=Repertório");
