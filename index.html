@@ -8,7 +8,6 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    /* ... css ... */
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: #f4f7f6;
@@ -36,7 +35,130 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
-    /* ... */
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      opacity: 1;
+      transition: opacity 0.5s;
+    }
+
+    .menu-item {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-decoration: none;
+      color: #2c3e50;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-item i {
+      font-size: 2rem;
+      color: #3498db;
+    }
+
+    .menu-item span {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    /* Progress Bar */
+    .sync-status {
+      margin-bottom: 20px;
+      width: 100%;
+      display: none;
+    }
+
+    .progress-track {
+      background: #e0e0e0;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .progress-fill {
+      background: #27ae60;
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-top: 5px;
+      display: block;
+    }
+
+    .btn-sync {
+      background: none;
+      border: 1px solid #3498db;
+      color: #3498db;
+      padding: 8px 20px;
+      border-radius: 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.3s;
+      width: 80%;
+    }
+
+    .btn-sync:hover {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-logout {
+      margin-top: 10px;
+      color: #e74c3c;
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .install-banner {
+      display: none;
+      background: #3498db;
+      color: white;
+      padding: 15px;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .user-welcome {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+
+    .last-update {
+      margin-top: 30px;
+      font-size: 0.75rem;
+      color: #95a5a6;
+    }
   </style>
 </head>
 
@@ -72,7 +194,6 @@
         <i class="fas fa-music"></i>
         <span>Músicas</span>
       </a>
-      <!-- ... -->
       <a href="Repertorio.html" class="menu-item">
         <i class="fas fa-list"></i>
         <span>Repertório</span>
@@ -106,11 +227,23 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjwn6-sdv8f4BLLwaqQWPc4yNI8CS40gO8J77GrJDqLncENJncWIfAV-FBkZuZP6k/exec";
 
+    // AUTO LOGOUT - 24 horas
+    const SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
+
+    function checkSession() {
+      const last = localStorage.getItem('last_activity');
+      const now = Date.now();
+      if (last && (now - parseInt(last) > SESSION_TIMEOUT)) {
+        alert("Sessão expirada. Faça login novamente.");
+        logout(true);
+      }
+      localStorage.setItem('last_activity', now.toString());
+    }
+
     async function syncAllData() {
       const statusBox = document.getElementById('syncStatus');
       const progFill = document.getElementById('progFill');
       const progText = document.getElementById('progText');
-      const menu = document.getElementById('menuGrid');
 
       statusBox.style.display = 'block';
 
@@ -120,63 +253,63 @@
       };
 
       try {
-        updateProgress(10, "Carregando Escalas...");
-        const res1 = await fetch(SCRIPT_URL + "?sheet=Transformar");
-        const json1 = await res1.json();
-        localStorage.setItem('offline_escala', JSON.stringify(json1.data));
-
-        updateProgress(25, "Carregando Repertório...");
-        const res2 = await fetch(SCRIPT_URL + "?sheet=Repertório");
-        const json2 = await res2.json();
-        localStorage.setItem('offline_repertorio', JSON.stringify(json2.data));
-
-        updateProgress(45, "Carregando Músicas...");
-        const res3 = await fetch(SCRIPT_URL + "?sheet=Musicas");
-        const json3 = await res3.json();
-        localStorage.setItem('offline_musicas', JSON.stringify(json3.data));
-
-        updateProgress(65, "Carregando Componentes...");
-        const res4 = await fetch(SCRIPT_URL + "?sheet=Componentes");
-        const json4 = await res4.json();
-        localStorage.setItem('offline_componentes', JSON.stringify(json4.data));
-
-        updateProgress(80, "Carregando Temas...");
-        const resTemas = await fetch(SCRIPT_URL + "?sheet=" + encodeURIComponent("Tema Músicas"));
-        const jsonTemas = await resTemas.json();
-        localStorage.setItem('offline_temas', JSON.stringify(jsonTemas.data));
-
-        updateProgress(90, "Carregando Histórico...");
-        const res5 = await fetch(SCRIPT_URL + "?sheet=Historico%20de%20Músicas");
-        const json5 = await res5.json();
-        localStorage.setItem('offline_historico', JSON.stringify(json5.data));
-
-        updateProgress(95, "Sincronizando Imagens...");
-        const res6 = await fetch(SCRIPT_URL + "?action=getImages");
-        const json6 = await res6.json();
-        localStorage.setItem('offline_imagens', JSON.stringify(json6.data));
-
-
-        // Atualiza Data
-        const now = new Date();
-        localStorage.setItem('last_full_sync', now.toISOString());
-        updateLastUpdateText();
-
+        await performFetches(updateProgress);
         updateProgress(100, "Dados Atualizados!");
-        setTimeout(() => {
-          statusBox.style.display = 'none';
-        }, 1000);
-
+        setTimeout(() => { statusBox.style.display = 'none'; }, 1000);
       } catch (e) {
         console.error(e);
-        updateProgress(0, "Erro ao conectar. Tente novamente.");
-        setTimeout(() => {
-          statusBox.style.display = 'none';
-        }, 2000);
+        updateProgress(0, "Erro ao conectar.");
+        setTimeout(() => { statusBox.style.display = 'none'; }, 2000);
       }
     }
 
-    function logout() {
-      if (confirm("Deseja sair?")) {
+    // Background Sync (Silencioso)
+    async function backgroundSync() {
+      try {
+        console.log("Iniciando Sync em Segundo Plano...");
+        await performFetches(() => { });
+        console.log("Sync em Segundo Plano Concluído.");
+      } catch (e) {
+        console.error("Erro no background sync:", e);
+      }
+    }
+
+    async function performFetches(progressCb) {
+      progressCb(10, "Escalas...");
+      const res1 = await fetch(SCRIPT_URL + "?sheet=Transformar");
+      localStorage.setItem('offline_escala', JSON.stringify((await res1.json()).data));
+
+      progressCb(30, "Repertório...");
+      const res2 = await fetch(SCRIPT_URL + "?sheet=Repertório");
+      localStorage.setItem('offline_repertorio', JSON.stringify((await res2.json()).data));
+
+      progressCb(50, "Músicas...");
+      const res3 = await fetch(SCRIPT_URL + "?sheet=Musicas");
+      localStorage.setItem('offline_musicas', JSON.stringify((await res3.json()).data));
+
+      progressCb(65, "Componentes...");
+      const res4 = await fetch(SCRIPT_URL + "?sheet=Componentes");
+      localStorage.setItem('offline_componentes', JSON.stringify((await res4.json()).data));
+
+      progressCb(80, "Temas...");
+      const resTemas = await fetch(SCRIPT_URL + "?sheet=" + encodeURIComponent("Tema Músicas"));
+      localStorage.setItem('offline_temas', JSON.stringify((await resTemas.json()).data));
+
+      progressCb(90, "Histórico...");
+      const res5 = await fetch(SCRIPT_URL + "?sheet=Historico%20de%20Músicas");
+      localStorage.setItem('offline_historico', JSON.stringify((await res5.json()).data));
+
+      progressCb(95, "Imagens...");
+      const res6 = await fetch(SCRIPT_URL + "?action=getImages");
+      localStorage.setItem('offline_imagens', JSON.stringify((await res6.json()).data));
+
+      const now = new Date();
+      localStorage.setItem('last_full_sync', now.toISOString());
+      updateLastUpdateText();
+    }
+
+    function logout(force = false) {
+      if (force || confirm("Deseja sair?")) {
         localStorage.removeItem('user_token');
         window.location.href = 'Login.html';
       }
@@ -193,16 +326,12 @@
       }
     }
 
-    // Auto-Sync on first load
     window.onload = () => {
-      // Set User Name
       if (userData.Nome) document.getElementById('userName').innerText = userData.Nome.split(' ')[0];
-
       updateLastUpdateText();
-
-      if (!localStorage.getItem('last_full_sync')) {
-        syncAllData();
-      }
+      checkSession();
+      // Sempre roda sync em background ao abrir
+      backgroundSync();
     };
 
     if ('serviceWorker' in navigator) {

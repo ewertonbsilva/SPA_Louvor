@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendário de Escalas Pro</title>
+  <title>Calendário de Escalas</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
@@ -17,10 +17,6 @@
       --highlight: #2ecc71;
       --music-bg: #fdf2e9;
       --music-text: #e67e22;
-      --yt: #ff0000;
-      --sp: #1db954;
-      --cf: #f1c40f;
-      --lt: #3498db;
     }
 
     body {
@@ -30,9 +26,29 @@
       padding: 15px;
     }
 
+    .header-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--primary);
+    }
+
     .calendar-container {
       max-width: 900px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .month-wrapper {
       background: #fff;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -53,7 +69,6 @@
       outline: none;
       font-size: 1rem;
       box-sizing: border-box;
-      transition: 0.3s;
     }
 
     #personSearch:focus {
@@ -67,30 +82,12 @@
       color: #95a5a6;
     }
 
-    /* Botão de Adicionar Tudo */
-    #addAllContainer {
-      text-align: center;
-      margin-bottom: 15px;
-      display: none;
-    }
-
-    .btn-bulk {
-      background: var(--highlight);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.9rem;
-      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
-    }
-
     .cal-header {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      position: relative;
     }
 
     .cal-header h2 {
@@ -98,15 +95,6 @@
       color: var(--primary);
       text-transform: capitalize;
       font-size: 1.2rem;
-    }
-
-    .btn-nav {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 8px;
-      cursor: pointer;
     }
 
     .calendar-grid {
@@ -125,18 +113,13 @@
     }
 
     .day {
-      min-height: 85px;
+      min-height: 80px;
       border: 1px solid #eee;
       border-radius: 8px;
       padding: 5px;
-      transition: 0.3s;
       cursor: pointer;
-      position: relative;
       background: #fafafa;
-    }
-
-    .day.today {
-      border: 2px solid var(--today);
+      position: relative;
     }
 
     .day.has-event {
@@ -172,7 +155,6 @@
 
     .event-name {
       background: rgba(255, 255, 255, 0.7);
-      padding: 1px 3px;
       border-radius: 3px;
       white-space: nowrap;
       overflow: hidden;
@@ -194,12 +176,12 @@
 
     .modal-content {
       background: white;
-      margin: 5% auto;
+      margin: 10% auto;
       padding: 20px;
       border-radius: 15px;
-      max-width: 500px;
-      width: 95%;
-      max-height: 90vh;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
       overflow-y: auto;
       position: relative;
     }
@@ -217,132 +199,68 @@
       border: 1px solid #eee;
       border-radius: 10px;
       margin-bottom: 12px;
-      overflow: hidden;
     }
 
     .culto-header {
       background: var(--primary);
       color: white;
-      padding: 12px;
-      cursor: pointer;
+      padding: 10px;
       font-size: 0.9rem;
-      display: flex;
-      justify-content: space-between;
     }
 
     .culto-body {
-      padding: 15px;
-      display: none;
+      padding: 10px;
       background: #fff;
-    }
-
-    .culto-body.active {
-      display: block;
-    }
-
-    .btn-gcal {
-      background: #4285f4;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.75rem;
-      font-weight: bold;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-
-    .section-title {
-      font-size: 0.7rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: #95a5a6;
-      margin-bottom: 8px;
-      display: block;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 3px;
     }
 
     .member-item {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
       font-size: 0.85rem;
+      padding: 4px 0;
       border-bottom: 1px solid #f9f9f9;
     }
 
     .musica-item {
       background: var(--music-bg);
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      border-left: 4px solid var(--music-text);
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 5px;
+      font-size: 0.85rem;
+      border-left: 3px solid var(--music-text);
     }
 
-    .m-footer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
-    .m-tom {
-      font-weight: bold;
-      color: #2c3e50;
-      font-size: 0.75rem;
-      background: #fff;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #eee;
-    }
-
-    .m-links {
-      display: flex;
-      gap: 12px;
-      font-size: 1.1rem;
-    }
-
-    @media (max-width: 600px) {
-      .day {
-        min-height: 70px;
-      }
-
-      .event-preview {
-        display: none;
-      }
+    .loader {
+      text-align: center;
+      color: #888;
+      margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
 
+  <div class="header-bar">
+    <button class="nav-btn" onclick="window.location.href='MenuEscalas.html'"><i class="fas fa-arrow-left"></i></button>
+    <h2 style="flex-grow:1; text-align:center; color:var(--primary); margin:0; font-size:1.2rem">Calendário</h2>
+    <div style="width: 24px;"></div>
+  </div>
+
   <div class="search-box">
     <i class="fas fa-search"></i>
-    <input type="text" id="personSearch" placeholder="Digite seu nome..." onkeyup="renderCalendar()">
+    <input type="text" id="personSearch" placeholder="Filtrar por nome..." onkeyup="renderCalendars()">
   </div>
 
-  <div id="addAllContainer">
-    <button class="btn-bulk" onclick="downloadICS()">
-      <i class="fas fa-file-export"></i> Adicionar Tudo na Agenda (.ics)
-    </button>
-  </div>
+  <div id="loader" class="loader"><i class="fas fa-sync fa-spin"></i> Carregando...</div>
 
-  <div class="calendar-container">
-    <div class="cal-header">
-      <button class="btn-nav" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-      <h2 id="currentMonth">Mês Ano</h2>
-      <button class="btn-nav" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
-    </div>
-    <div class="calendar-grid" id="calendarGrid"></div>
+  <div class="calendar-container" id="calendarsContainer" style="display:none">
+    <div class="month-wrapper" id="month1"></div>
+    <div class="month-wrapper" id="month2"></div>
   </div>
 
   <div id="eventModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeModal()">×</span>
+      <span class="close-modal" onclick="document.getElementById('eventModal').style.display='none'">×</span>
       <h3 id="modalDate" style="color: var(--primary); margin-top: 0;">Data</h3>
       <div id="modalDetails"></div>
     </div>
@@ -351,114 +269,120 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjwn6-sdv8f4BLLwaqQWPc4yNI8CS40gO8J77GrJDqLncENJncWIfAV-FBkZuZP6k/exec";
 
-    let currentViewDate = new Date();
     let globalEscalas = [];
     let globalRepertorio = {};
-
     const iconsMap = {
       "Ministro": "fa-microphone-lines", "Back": "fa-microphone", "Violão": "fa-guitar",
       "Guitarra": "fa-guitar-electric", "Teclado": "fa-keyboard", "Bateria": "fa-drum",
       "Baixo": "fa-drum-steelpan"
     };
 
-    function obterHorario(nomeCulto, dataStr) {
-      const data = new Date(dataStr + "T12:00:00");
-      const dia = data.getDay(); // 0 Dom, 1 Seg...
-      const nome = nomeCulto.toLowerCase();
-
-      if (nome.includes("idoso")) return { in: "070000", out: "090000" };
-      if (dia >= 1 && dia <= 5) return { in: "190000", out: "210000" }; // Seg a Sex
-      return { in: "173000", out: "193000" }; // Domingo e outros
-    }
-
     async function loadData() {
-      try {
-        const [resE, resR] = await Promise.all([
-          fetch(SCRIPT_URL + "?sheet=Transformar"),
-          fetch(SCRIPT_URL + "?sheet=Repertório")
-        ]);
-        const dataE = await resE.json();
-        const dataR = await resR.json();
-        globalEscalas = dataE.data;
-        globalRepertorio = dataR.data.reduce((acc, item) => {
-          const key = item["Culto+Data"];
-          if (!acc[key]) acc[key] = [];
-          acc[key].push(item);
-          return acc;
-        }, {});
-        renderCalendar();
-      } catch (e) { console.error(e); }
+      const loader = document.getElementById('loader');
+
+      const cachedE = localStorage.getItem('offline_escala');
+      const cachedR = localStorage.getItem('offline_repertorio');
+
+      // Tenta cache primeiro
+      if (cachedE && cachedR) {
+        globalEscalas = JSON.parse(cachedE);
+        const repData = JSON.parse(cachedR);
+        processRepertorio(repData);
+        loader.style.display = 'none';
+        document.getElementById('calendarsContainer').style.display = 'flex';
+        renderCalendars();
+      } else {
+        // Fallback network (mas idealmente o index.html já baixou)
+        try {
+          const [resE, resR] = await Promise.all([fetch(SCRIPT_URL + "?sheet=Transformar"), fetch(SCRIPT_URL + "?sheet=Repertório")]);
+          const jsonE = await resE.json();
+          const jsonR = await resR.json();
+
+          globalEscalas = jsonE.data;
+          processRepertorio(jsonR.data);
+
+          localStorage.setItem('offline_escala', JSON.stringify(jsonE.data));
+          localStorage.setItem('offline_repertorio', JSON.stringify(jsonR.data));
+
+          loader.style.display = 'none';
+          document.getElementById('calendarsContainer').style.display = 'flex';
+          renderCalendars();
+        } catch (e) {
+          loader.innerText = "Erro ao carregar dados. Verifique a internet.";
+        }
+      }
     }
 
-    function renderCalendar() {
-      const grid = document.getElementById('calendarGrid');
-      const monthLabel = document.getElementById('currentMonth');
+    function processRepertorio(data) {
+      globalRepertorio = data.reduce((acc, item) => {
+        const key = item["Culto+Data"];
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+    }
+
+    function renderCalendars() {
+      const now = new Date();
+      // Render Current Month
+      renderMonth(now, 'month1');
+
+      // Render Next Month
+      const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      renderMonth(next, 'month2');
+    }
+
+    function renderMonth(date, containerId) {
+      const container = document.getElementById(containerId);
+      const year = date.getFullYear();
+      const month = date.getMonth();
       const searchTerm = document.getElementById('personSearch').value.toLowerCase().trim();
-      const addAllBtn = document.getElementById('addAllContainer');
 
-      addAllBtn.style.display = searchTerm.length > 2 ? 'block' : 'none';
-      grid.innerHTML = '';
-      const year = currentViewDate.getFullYear();
-      const month = currentViewDate.getMonth();
-      monthLabel.innerText = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(currentViewDate);
+      let html = `
+        <div class="cal-header"><h2>${new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(date)}</h2></div>
+        <div class="calendar-grid">
+      `;
 
-      ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => grid.innerHTML += `<div class="day-name">${d}</div>`);
+      ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => html += `<div class="day-name">${d}</div>`);
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+      for (let i = 0; i < firstDay; i++) html += `<div></div>`;
 
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayEscalas = globalEscalas.filter(e => e.Data.split('T')[0] === dateStr);
-        const isMatch = searchTerm !== "" && dayEscalas.some(e => e.Nome.toLowerCase().includes(searchTerm));
         const nomesNoDia = [...new Set(dayEscalas.map(e => e.Nome))];
+        const isMatch = searchTerm !== "" && nomesNoDia.some(n => n.toLowerCase().includes(searchTerm));
 
-        const dayEl = document.createElement('div');
-        dayEl.className = `day ${dayEscalas.length > 0 ? 'has-event' : ''} ${isMatch ? 'match-person' : ''}`;
-        dayEl.onclick = () => showDetails(dateStr, dayEscalas);
-        dayEl.innerHTML = `<span class="day-number">${d}</span><div class="event-preview">${nomesNoDia.slice(0, 2).map(n => `<span class="event-name">${n}</span>`).join('')}</div>`;
-        grid.appendChild(dayEl);
+        let classes = `day ${dayEscalas.length > 0 ? 'has-event' : ''} ${isMatch ? 'match-person' : ''}`;
+
+        // Convert to string for onclick (careful with quotes)
+        // Storing data in a global map might be cleaner, but simple approach:
+        const onclick = dayEscalas.length ? `openDetails('${dateStr}')` : '';
+
+        html += `
+          <div class="${classes}" onclick="${onclick}">
+            <span class="day-number">${d}</span>
+            <div class="event-preview">
+              ${nomesNoDia.slice(0, 3).map(n => `<span class="event-name">${n.split(' ')[0]}</span>`).join('')}
+            </div>
+          </div>
+        `;
       }
+
+      html += `</div>`;
+      container.innerHTML = html;
     }
 
-    function downloadICS() {
-      const searchTerm = document.getElementById('personSearch').value.toLowerCase().trim();
-      const minhas = globalEscalas.filter(e => e.Nome.toLowerCase().includes(searchTerm));
-      if (minhas.length === 0) return;
-
-      let ics = "BEGIN:VCALENDAR\nVERSION:2.0\n";
-      minhas.forEach(e => {
-        const d = e.Data.split('T')[0].replace(/-/g, '');
-        const h = obterHorario(e["Nome dos Cultos"], e.Data.split('T')[0]);
-        ics += `BEGIN:VEVENT\nSUMMARY:Escala: ${e["Nome dos Cultos"]}\nDTSTART:${d}T${h.in}\nDTEND:${d}T${h.out}\nDESCRIPTION:Função: ${e.Função}\nEND:VEVENT\n`;
-      });
-      ics += "END:VCALENDAR";
-
-      const blob = new Blob([ics], { type: 'text/calendar' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `escalas_${searchTerm}.ics`;
-      a.click();
-    }
-
-    function addToGoogle(nomeCulto, dataStr, funcoes) {
-      const d = dataStr.replace(/-/g, '');
-      const h = obterHorario(nomeCulto, dataStr);
-      const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(nomeCulto)}&dates=${d}T${h.in}/${d}T${h.out}&details=${encodeURIComponent(funcoes)}`;
-      window.open(url, '_blank');
-    }
-
-    function showDetails(dateStr, escalasDoDia) {
-      if (escalasDoDia.length === 0) return;
+    window.openDetails = function (dateStr) {
+      const dayEscalas = globalEscalas.filter(e => e.Data.split('T')[0] === dateStr);
       const details = document.getElementById('modalDetails');
-      const searchTerm = document.getElementById('personSearch').value.toLowerCase().trim();
-
       const d = new Date(dateStr + "T12:00:00");
       document.getElementById('modalDate').innerText = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
 
-      const cultos = escalasDoDia.reduce((acc, item) => {
+      const cultos = dayEscalas.reduce((acc, item) => {
         if (!acc[item.Cultos]) acc[item.Cultos] = { info: item, membros: [] };
         acc[item.Cultos].membros.push(item);
         return acc;
@@ -466,41 +390,35 @@
 
       details.innerHTML = Object.values(cultos).map(c => {
         const musicas = globalRepertorio[c.info.Cultos] || [];
-        const minhaFuncao = c.membros.filter(m => m.Nome.toLowerCase().includes(searchTerm)).map(m => m.Função).join(', ');
-
-        const btn = (searchTerm !== "" && minhaFuncao !== "") ?
-          `<button class="btn-gcal" onclick="addToGoogle('${c.info["Nome dos Cultos"]}', '${dateStr}', '${minhaFuncao}')"><i class="fab fa-google"></i> Salvar na Agenda</button>` : '';
 
         return `
-        <div class="culto-detalhe">
-          <div class="culto-header" onclick="this.nextElementSibling.classList.toggle('active')">
-            <span><i class="fas fa-church"></i> ${c.info["Nome dos Cultos"]}</span>
-            <i class="fas fa-chevron-down"></i>
-          </div>
-          <div class="culto-body">
-            ${btn}
-            <span class="section-title">Equipe</span>
-            ${c.membros.map(m => `
-              <div class="member-item">
-                <span><i class="fa-solid ${iconsMap[m.Função.split(',')[0].trim()] || 'fa-user'}" style="color:var(--accent)"></i> ${m.Nome}</span>
-                <span style="color:#888; font-size:11px">${m.Função}</span>
-              </div>
-            `).join('')}
-            <span class="section-title" style="margin-top:10px">Repertório</span>
-            ${musicas.map(m => `
-              <div class="musica-item">
-                <div style="font-weight:bold; font-size:0.85rem">${m.Músicas}</div>
-                <div class="m-footer"><span class="m-tom">${m.Tons || '--'}</span></div>
-              </div>
-            `).join('') || '<div style="color:#ccc; font-size:0.8rem">Sem músicas.</div>'}
-          </div>
-        </div>`;
+           <div class="culto-detalhe">
+             <div class="culto-header">
+               <span><i class="fas fa-church"></i> ${c.info["Nome dos Cultos"]}</span>
+             </div>
+             <div class="culto-body">
+               <div style="font-weight:bold; margin-bottom:5px; color:#aaa; font-size:0.7rem">EQUIPE</div>
+               ${c.membros.map(m => `
+                 <div class="member-item">
+                   <span><i class="fa-solid ${iconsMap[m.Função.split(',')[0].trim()] || 'fa-user'}" style="color:var(--accent)"></i> ${m.Nome}</span>
+                   <span style="color:#888; font-size:0.75rem">${m.Função}</span>
+                 </div>
+               `).join('')}
+               
+               <div style="font-weight:bold; margin-top:10px; margin-bottom:5px; color:#aaa; font-size:0.7rem">REPERTÓRIO</div>
+               ${musicas.map(m => `
+                 <div class="musica-item">
+                   <div style="font-weight:bold">${m.Músicas}</div>
+                   <div style="font-size:0.75rem; color:#666; margin-top:2px">Tom: <b>${m.Tons || '--'}</b></div>
+                 </div>
+               `).join('') || '<div style="color:#ccc; font-size:0.8rem">Sem músicas.</div>'}
+             </div>
+           </div>`;
       }).join('');
+
       document.getElementById('eventModal').style.display = 'block';
     }
 
-    function changeMonth(s) { currentViewDate.setMonth(currentViewDate.getMonth() + s); renderCalendar(); }
-    function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
     loadData();
   </script>
 </body>
