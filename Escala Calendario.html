@@ -527,7 +527,7 @@
         const dataBase = e.Data.includes('T') ? e.Data.split('T')[0] : e.Data;
         const d = new Date(dataBase + "T12:00:00");
 
-        const dataFormatada = isNaN(d.getTime()) ? "DATA INVÁLIDA" : d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        const dataFormatada = isNaN(d.getTime()) ? "DATA INVÁLIDA" : d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(',', '');
 
         const item = document.createElement('div');
         item.className = 'export-item';
