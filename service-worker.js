@@ -1,4 +1,4 @@
-const CACHE_NAME = 'louvor-app-v4';
+const CACHE_NAME = 'louvor-app-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -15,9 +15,8 @@ const ASSETS_TO_CACHE = [
   './AcessoMesa.html',
   './Historico de Musicas.html',
   './Imagens.html',
-  './icon.png',
-  './Leão.ico',
-  './backgroud.png',
+  './assets/Leão.png',
+  './assets/backgroud.png',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css'
 ];
