@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escalas de Louvor</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .menu-item {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #2c3e50;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item i {
+            font-size: 2.5rem;
+            color: #3498db;
+        }
+
+        .menu-item div {
+            text-align: left;
+        }
+
+        .menu-item h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .menu-item p {
+            margin: 5px 0 0 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <button class="nav-btn" onclick="window.location.href='index.html'"><i
+                    class="fas fa-arrow-left"></i></button>
+            <h2>Escalas</h2>
+            <div style="width: 24px;"></div> <!-- Spacer -->
+        </div>
+
+        <div class="menu-grid">
+            <a href="Escalas.html" class="menu-item">
+                <i class="fas fa-list-ul"></i>
+                <div>
+                    <h3>Lista</h3>
+                    <p>Visualizar escalas em lista</p>
+                </div>
+            </a>
+            <a href="Escala Calendario.html" class="menu-item">
+                <i class="fas fa-calendar-days"></i>
+                <div>
+                    <h3>Calendário</h3>
+                    <p>Visualizar escalas no calendário</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</body>
+
+</html>

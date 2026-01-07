@@ -2,16 +2,20 @@ const CACHE_NAME = 'louvor-app-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './Login.html',
+  './MenuEscalas.html',
   './Escalas.html',
+  './Escala Calendario.html',
   './Musicas.html',
   './Repertorio.html',
   './Componentes.html',
   './Cadastro de Musicas.html',
   './Cadastro de Repertorio.html',
-  './Escala Calendario.html',
   './Historico de Musicas.html',
   './Imagens.html',
   './icon.png',
+  './Leão.ico',
+  './backgroud.png',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css'
 ];
@@ -48,7 +52,7 @@ self.addEventListener('fetch', (event) => {
   // Actually, usually we want fresh data. If offline, maybe cache?
   // For simplicity, let's use Network First for everything to ensure freshness, 
   // falling back to cache if offline.
-  
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {

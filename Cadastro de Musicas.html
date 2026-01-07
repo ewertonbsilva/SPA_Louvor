@@ -163,27 +163,39 @@
     // 1. Carregar os temas da aba "Tema Músicas" ao abrir a página
     async function loadTemas() {
       const select = document.getElementById('temaSelect');
-      try {
-        const response = await fetch(SCRIPT_URL + "?sheet=" + encodeURIComponent("Tema Músicas"));
-        const json = await response.json();
+      const cached = localStorage.getItem('offline_temas');
 
-        select.innerHTML = '<option value="">Selecione o tema...</option>';
+      let data = [];
 
-        if (json.data && json.data.length > 0) {
-          json.data.forEach(item => {
-            // Pega o valor da primeira coluna (independente do nome)
-            let nomeTema = Object.values(item)[0];
-            if (nomeTema && nomeTema !== "Tema") {
-              let option = document.createElement('option');
-              option.value = nomeTema;
-              option.text = nomeTema;
-              select.appendChild(option);
-            }
-          });
+      if (cached) {
+        data = JSON.parse(cached);
+      } else {
+        try {
+          // Fallback se não tiver cache
+          const response = await fetch(SCRIPT_URL + "?sheet=" + encodeURIComponent("Tema Músicas"));
+          const json = await response.json();
+          data = json.data;
+          // Salva para proxima vez (embora o index.html seja o principal responsável)
+          localStorage.setItem('offline_temas', JSON.stringify(data));
+        } catch (e) {
+          console.error("Erro ao carregar temas:", e);
+          select.innerHTML = '<option value="">Erro ao conectar</option>';
+          return;
         }
-      } catch (e) {
-        console.error("Erro ao carregar temas:", e);
-        select.innerHTML = '<option value="">Erro ao carregar temas</option>';
+      }
+
+      select.innerHTML = '<option value="">Selecione o tema...</option>';
+
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          let nomeTema = Object.values(item)[0];
+          if (nomeTema && nomeTema !== "Tema") {
+            let option = document.createElement('option');
+            option.value = nomeTema;
+            option.text = nomeTema;
+            select.appendChild(option);
+          }
+        });
       }
     }
 

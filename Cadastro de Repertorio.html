@@ -170,12 +170,25 @@
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
-        // Carregar Cultos e Escalas da aba Transformar
-        const resT = await fetch(SCRIPT_URL + "?sheet=Transformar");
-        const jsonT = await resT.json();
-        transformData = jsonT.data;
+        // Carregar do Cache se disponível
+        const cachedEscala = localStorage.getItem('offline_escala');
+        const cachedMusicas = localStorage.getItem('offline_musicas');
 
-        // Adicionar nomes únicos de cultos futuros
+        let transformDataTemp = [];
+        let musicasDataTemp = [];
+
+        // LOAD TRANSFORM
+        if (cachedEscala) {
+          transformDataTemp = JSON.parse(cachedEscala);
+        } else {
+          const resT = await fetch(SCRIPT_URL + "?sheet=Transformar");
+          const jsonT = await resT.json();
+          transformDataTemp = jsonT.data;
+          localStorage.setItem('offline_escala', JSON.stringify(transformDataTemp));
+        }
+        transformData = transformDataTemp; // Global var usage
+
+        // Add Cultos
         const cultosUnicos = [...new Set(transformData.map(i => i.Cultos))];
         tsCulto.clearOptions();
         cultosUnicos.forEach(cNome => {
@@ -185,10 +198,17 @@
           }
         });
 
-        // Carregar Músicas
-        const resM = await fetch(SCRIPT_URL + "?sheet=Musicas");
-        const jsonM = await resM.json();
-        jsonM.data.forEach(m => {
+        // LOAD MUSICAS
+        if (cachedMusicas) {
+          musicasDataTemp = JSON.parse(cachedMusicas);
+        } else {
+          const resM = await fetch(SCRIPT_URL + "?sheet=Musicas");
+          const jsonM = await resM.json();
+          musicasDataTemp = jsonM.data;
+          localStorage.setItem('offline_musicas', JSON.stringify(musicasDataTemp));
+        }
+
+        musicasDataTemp.forEach(m => {
           if (m.MusicaCorigida) {
             let txt = m.MusicaCorigida + " - " + m["Cantor Corrigido"];
             tsMusica.addOption({ value: txt, text: txt });
