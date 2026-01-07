@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadastro de Músicas</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">`n  <script src="config.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     :root {
@@ -164,7 +164,7 @@
 
   <script>
     // ATENÇÃO: Verifique se este é o seu link atualizado do Web App
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjwn6-sdv8f4BLLwaqQWPc4yNI8CS40gO8J77GrJDqLncENJncWIfAV-FBkZuZP6k/exec";
+    const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
 
     // 1. Carregar os temas da aba "Tema Músicas" ao abrir a página
     async function loadTemas() {

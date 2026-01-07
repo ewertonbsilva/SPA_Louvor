@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">`n  <script src="config.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     :root {
@@ -239,7 +239,7 @@
   <div id="main-content" class="container"></div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjwn6-sdv8f4BLLwaqQWPc4yNI8CS40gO8J77GrJDqLncENJncWIfAV-FBkZuZP6k/exec";
+    const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
     const urlGet = SCRIPT_URL + "?sheet=Musicas";
 
     async function loadData(force = false) {

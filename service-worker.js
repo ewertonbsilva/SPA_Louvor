@@ -2,6 +2,7 @@ const CACHE_NAME = 'louvor-app-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './config.js',
   './Login.html',
   './MenuEscalas.html',
   './Escalas.html',
