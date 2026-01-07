@@ -181,7 +181,8 @@
       <button class="nav-btn" onclick="iniciar(true)"><i class="fas fa-sync-alt"></i></button>
     </div>
     <div id="listaComponentes">
-      <div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+      <div id="loader" style="display:none; text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i>
+        Atualizando...</div>
     </div>
   </div>
 
@@ -192,45 +193,53 @@
 
     async function iniciar(force = false) {
       const container = document.getElementById('listaComponentes');
+      const loader = document.getElementById('loader');
       const cachedComp = localStorage.getItem('offline_componentes');
+      const cachedImg = localStorage.getItem('offline_imagens');
 
-      // Se tiver cache e não for forçado, usa cache.
-      // As imagens são menos críticas, se não tiver cache delas, busca em background, mas renderiza os nomes.
-      if (!force && cachedComp) {
-        const cachedImg = localStorage.getItem('offline_imagens');
-        if (cachedImg) bancoImagens = JSON.parse(cachedImg);
-        renderizar(JSON.parse(cachedComp).filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM"));
-        // Se não tiver imagens no cache, busca silenciosamente
-        if (!cachedImg) fetchImages();
+      if (!force && cachedComp && cachedImg) {
+        bancoImagens = JSON.parse(cachedImg);
+        const ativos = JSON.parse(cachedComp).filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM");
+        renderizar(ativos);
+        setTimeout(() => silentSync(), 500);
         return;
       }
 
-      container.innerHTML = '<div style="text-align:center; padding:50px;"><i class="fas fa-spinner fa-spin"></i> Atualizando...</div>';
-
+      loader.style.display = 'block';
       try {
-        // Busca Paralela
         const [resComp, resImg] = await Promise.all([
           fetch(SCRIPT_URL + "?sheet=Componentes"),
           fetch(SCRIPT_URL + "?action=getImages")
         ]);
-
         const dataComp = await resComp.json();
         const dataImg = await resImg.json();
-
         localStorage.setItem('offline_componentes', JSON.stringify(dataComp.data));
         localStorage.setItem('offline_imagens', JSON.stringify(dataImg.data));
         bancoImagens = dataImg.data;
-
+        loader.style.display = 'none';
         const ativos = dataComp.data.filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM");
         renderizar(ativos);
         if (force) alert("Lista atualizada!");
-
       } catch (e) {
-        container.innerHTML = "Erro ao conectar.";
-        if (cachedComp) {
-          renderizar(JSON.parse(cachedComp).filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM"));
-        }
+        if (cachedComp) renderizar(JSON.parse(cachedComp).filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM"));
+        else container.innerHTML = "Erro ao conectar.";
       }
+    }
+
+    async function silentSync() {
+      try {
+        const [resComp, resImg] = await Promise.all([
+          fetch(SCRIPT_URL + "?sheet=Componentes"),
+          fetch(SCRIPT_URL + "?action=getImages")
+        ]);
+        const dataComp = await resComp.json();
+        const dataImg = await resImg.json();
+        localStorage.setItem('offline_componentes', JSON.stringify(dataComp.data));
+        localStorage.setItem('offline_imagens', JSON.stringify(dataImg.data));
+        bancoImagens = dataImg.data;
+        const ativos = dataComp.data.filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM");
+        renderizar(ativos);
+      } catch (e) { console.log("Silent sync failed"); }
     }
 
     async function fetchImages() {
