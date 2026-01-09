@@ -348,6 +348,7 @@
     const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
     const urlEscala = SCRIPT_URL + "?sheet=Transformar";
     const urlRepertorio = SCRIPT_URL + "?sheet=Repertório";
+    const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
 
     const iconsMap = {
       "Ministro": "fa-microphone-lines", "Back": "fa-microphone", "Violão": "fa-guitar",
@@ -358,9 +359,10 @@
       const loader = document.getElementById('loader');
       const cachedEscala = localStorage.getItem('offline_escala');
       const cachedRepertorio = localStorage.getItem('offline_repertorio');
+      const cachedLembretes = localStorage.getItem('offline_lembretes');
 
-      if (!forceUpdate && cachedEscala && cachedRepertorio) {
-        renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio));
+      if (!forceUpdate && cachedEscala && cachedRepertorio && cachedLembretes) {
+        renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes));
         setTimeout(() => silentSync(), 500);
         return;
       }
@@ -369,39 +371,48 @@
       loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando dados...';
 
       try {
-        const [resEscala, resRepertorio] = await Promise.all([fetch(urlEscala), fetch(urlRepertorio)]);
+        const [resEscala, resRepertorio, resLembretes] = await Promise.all([
+          fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
+        ]);
         const escalaJson = await resEscala.json();
         const repertorioJson = await resRepertorio.json();
+        const lembretesJson = await resLembretes.json();
 
         localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
         localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
+        localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
 
         loader.style.display = 'none';
-        renderMaster(escalaJson.data, repertorioJson.data);
+        renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
         if (forceUpdate) alert("Escalas atualizadas!");
       } catch (e) {
-        if (cachedEscala && cachedRepertorio) renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio));
+        if (cachedEscala && cachedRepertorio) renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes || '[]'));
         else loader.innerText = "Erro ao carregar dados.";
       }
     }
 
     async function silentSync() {
       try {
-        const [resEscala, resRepertorio] = await Promise.all([fetch(urlEscala), fetch(urlRepertorio)]);
+        const [resEscala, resRepertorio, resLembretes] = await Promise.all([
+          fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
+        ]);
         const escalaJson = await resEscala.json();
         const repertorioJson = await resRepertorio.json();
+        const lembretesJson = await resLembretes.json();
+
         localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
         localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
+        localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
 
         // Só renderiza se não houver busca ativa E nenhum accordion aberto
         const hasActiveItems = document.querySelector('.accordion-item.active') !== null;
         if (document.getElementById('searchInput').value === "" && !hasActiveItems) {
-          renderMaster(escalaJson.data, repertorioJson.data);
+          renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
         }
       } catch (e) { console.log("Silent sync failed"); }
     }
 
-    function renderMaster(escalas, musicas) {
+    function renderMaster(escalas, musicas, lembretes = []) {
       const container = document.getElementById('escala-container');
       container.innerHTML = '';
       const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
@@ -433,8 +444,23 @@
       escalasFiltradas.forEach(item => {
         const key = item.info.Cultos;
         const dataObj = new Date(item.info.Data);
-        const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        // Remove a vírgula do formato: ex "dom. 18/01"
+        const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(',', '');
+        const dataAvisoCheck = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const dataFullFormatada = dataObj.toLocaleDateString('pt-BR');
         const musicasDoCulto = repertorioAgrupado[key] || [];
+
+        // Filtrar lembretes deste culto específico (Aproximado por dd/mm + Nome do Culto)
+        const avisosDoCulto = lembretes.filter(l => {
+          const matchData = l.Culto && l.Culto.includes(dataAvisoCheck);
+          const matchNome = l.Culto && l.Culto.toLowerCase().includes(item.info["Nome dos Cultos"].toLowerCase().trim());
+          return matchData && matchNome;
+        });
+
+        // Verifica se o usuário logado está escalado neste culto
+        const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+        const meuNomeLogado = (userToken.Nome || "").toLowerCase().trim();
+        const estouEscalado = meuNomeLogado && item.membros.some(m => m.nome.toLowerCase().trim().includes(meuNomeLogado));
 
         const itemEl = document.createElement('div');
         itemEl.className = 'accordion-item';
@@ -456,26 +482,34 @@
         <div class="accordion-content">
           <div class="content-grid">
             <div>
-              <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
-              ${item.membros.map(m => {
-          const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
-          // Nome na planilha é "Nome", não "Name"
-          const meuNome = userToken.Nome || "";
-          const isMe = meuNome && m.nome.toLowerCase().trim().includes(meuNome.toLowerCase().trim());
-          return `
+              <div class="section-title-container">
+                <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
+                ${estouEscalado ? `
+                  <button class="btn-ausencia" onclick="comunicarAusencia('${dataFormatada}', '${item.info["Nome dos Cultos"]}', event)" title="Comunicar Aviso">
+                    <i class="fas fa-bell"></i> Avisos
+                  </button>
+                ` : ''}
+              </div>
+              ${item.membros.map(m => `
                 <div class="member-item">
                   <i class="fas ${iconsMap[m.funcao.split(' ')[0]] || 'fa-star'}"></i>
                   <div class="member-info">
                     <span class="m-nome">${m.nome}</span>
                     <span class="m-funcao">${m.funcao}</span>
                   </div>
-                  ${isMe ? `
-                    <button class="btn-ausencia" onclick="comunicarAusencia('${m.nome}', '${dataFormatada}', '${item.info["Nome dos Cultos"]}', event)">
-                      <i class="fas fa-exclamation-triangle"></i> Ausência
-                    </button>
-                  ` : ''}
                 </div>
-              `}).join('')}
+              `).join('')}
+
+              ${avisosDoCulto.length > 0 ? `
+                <div class="extra-section" style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px;">
+                  <span class="section-title" style="color:#e74c3c; font-size:0.7rem;"><i class="fas fa-exclamation-circle"></i> Avisos</span>
+                  ${avisosDoCulto.map(a => `
+                    <div style="font-size:0.8rem; background:#fff5f5; padding:8px; border-radius:5px; margin-top:5px; border-left:3px solid #e74c3c;">
+                      <b>${a.Componente}:</b> ${a.Info}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
             <div>
               <div class="section-title-container">
@@ -488,9 +522,9 @@
               </div>
               <div class="repertorio-list">
                 ${musicasDoCulto.length > 0 ? musicasDoCulto.map(m => {
-            const queryBusca = encodeURIComponent(`${m.Músicas}`);
-            const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
-            return `
+          const queryBusca = encodeURIComponent(`${m.Músicas}`);
+          const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
+          return `
                   <div class="musica-item">
                     <span class="m-nome-musica">${m.Músicas}</span>
                     <span class="m-cantor">
@@ -509,7 +543,7 @@
                       <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>`;
-          }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
+        }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
               </div>
             </div>
           </div>
@@ -552,9 +586,12 @@
       }
     }
 
-    async function comunicarAusencia(nome, dataCulto, nomeCulto, event) {
+    async function comunicarAusencia(dataCulto, nomeCulto, event) {
       event.stopPropagation();
-      const info = prompt(`Olá ${nome}, por favor informe o motivo da possível ausência para o culto do dia ${dataCulto} (${nomeCulto}):`);
+      const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+      const meuNome = userToken.Nome || "Membro";
+
+      const info = prompt(`Olá ${meuNome}, por favor informe o motivo da possível ausência para o culto do dia ${dataCulto} (${nomeCulto}):`);
 
       if (!info || info.trim() === "") return;
 
@@ -562,8 +599,8 @@
       const payload = {
         sheet: "Lembretes",
         id_Lembrete,
-        Componente: nome,
-        Data: new Date().toISOString(),
+        Componente: meuNome,
+        Data: new Date().toLocaleDateString('pt-BR'),
         Culto: `${nomeCulto} (${dataCulto})`,
         Info: info
       };

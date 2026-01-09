@@ -238,7 +238,12 @@
         localStorage.setItem('offline_imagens', JSON.stringify(dataImg.data));
         bancoImagens = dataImg.data;
         const ativos = dataComp.data.filter(c => c.Ativo && c.Ativo.toString().toUpperCase().trim() === "SIM");
-        renderizar(ativos);
+
+        // Só renderiza se não houver busca ativa E nenhum item aberto
+        const hasActiveItems = document.querySelector('.comp-card.active') !== null;
+        if (!hasActiveItems) {
+          renderizar(ativos);
+        }
       } catch (e) { console.log("Silent sync failed"); }
     }
 
