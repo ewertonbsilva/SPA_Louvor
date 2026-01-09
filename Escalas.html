@@ -7,6 +7,7 @@
   <title>Escala e Repertório</title>
   <link rel="manifest" href="manifest.json">
   <script src="config.js"></script>
+  <script src="sync.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     :root {
@@ -391,7 +392,10 @@
         const repertorioJson = await resRepertorio.json();
         localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
         localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
-        if (document.getElementById('searchInput').value === "") {
+
+        // Só renderiza se não houver busca ativa E nenhum accordion aberto
+        const hasActiveItems = document.querySelector('.accordion-item.active') !== null;
+        if (document.getElementById('searchInput').value === "" && !hasActiveItems) {
           renderMaster(escalaJson.data, repertorioJson.data);
         }
       } catch (e) { console.log("Silent sync failed"); }
@@ -455,7 +459,9 @@
               <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
               ${item.membros.map(m => {
           const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
-          const isMe = userToken.Name && m.nome.toLowerCase().trim().includes(userToken.Name.toLowerCase().trim());
+          // Nome na planilha é "Nome", não "Name"
+          const meuNome = userToken.Nome || "";
+          const isMe = meuNome && m.nome.toLowerCase().trim().includes(meuNome.toLowerCase().trim());
           return `
                 <div class="member-item">
                   <i class="fas ${iconsMap[m.funcao.split(' ')[0]] || 'fa-star'}"></i>
