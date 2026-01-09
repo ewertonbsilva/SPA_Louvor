@@ -247,6 +247,57 @@
         max-width: 1100px;
       }
     }
+
+    /* ANALYTICS */
+    .analytics-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-val {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .stat-lbl {
+      font-size: 0.7rem;
+      color: #7f8c8d;
+      text-transform: uppercase;
+    }
+
+    .chart-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 180px;
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .analytics-container {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -260,7 +311,8 @@
 
   <div id="loader" class="loading" style="display:none"><i class="fas fa-list-ul fa-spin"></i> Organizando por Tema e
     Estilo...</div>
-  <div id="main-content" class="container"></div>
+
+  <div id="main-content" class="container" style="margin-top: 5px;"></div>
 
   <script>
     const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;

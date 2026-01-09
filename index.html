@@ -441,10 +441,13 @@
         flex-direction: row;
         align-items: stretch;
         justify-content: space-between;
+        min-height: 420px;
       }
 
       .menu-grid {
-        grid-template-columns: 1fr !important;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: space-between;
         flex: 0 0 180px;
         order: 1;
         /* Esquerda */
@@ -533,15 +536,15 @@
           <span class="value" id="kpi-membros">0</span>
           <span class="label">Membros</span>
         </div>
+        <div class="kpi-card" style="border-color: #27ae60;">
+          <i class="fas fa-calendar-check" style="color: #27ae60;"></i>
+          <span class="label">Sua Próxima Escala</span>
+          <span class="value" id="kpi-proxima" style="font-size: 0.9rem; white-space: nowrap;">Carregando...</span>
+        </div>
         <div class="kpi-card" style="border-color: #e67e22;">
           <i class="fas fa-church" style="color: #e67e22;"></i>
           <span class="value" id="kpi-cultos">0</span>
           <span class="label">Cultos</span>
-        </div>
-        <div class="kpi-card" style="border-color: #27ae60;">
-          <i class="fas fa-chart-line" style="color: #27ae60;"></i>
-          <span class="value" id="kpi-media">0</span>
-          <span class="label">Média</span>
         </div>
       </div>
 
@@ -589,7 +592,7 @@
     <button class="btn-logout" onclick="logout()">Sair</button>
 
     <div class="last-update">
-      <span id="lastUpdateDate">Nunca atualizado</span> | <span id="appVersion">Versão v28</span>
+      <span id="lastUpdateDate">Nunca atualizado</span> | <span id="appVersion">Versão v35</span>
     </div>
   </div>
 
@@ -792,8 +795,42 @@
 
       document.getElementById('kpi-membros').innerText = listaOrdenada.length;
       document.getElementById('kpi-cultos').innerText = cultosUnicosGerais.size;
-      const media = listaOrdenada.length ? (listaOrdenada.reduce((s, v) => s + v.total, 0) / listaOrdenada.length).toFixed(1) : 0;
-      document.getElementById('kpi-media').innerText = media;
+
+      // CALCULAR PRÓXIMA ESCALA DO USUÁRIO
+      const user = JSON.parse(localStorage.getItem('user_token') || '{}');
+      const meuNome = (user.Nome || "").toLowerCase().trim();
+
+      const escalasUsuario = dados
+        .filter(e => {
+          const dataE = new Date(e.Data);
+          return dataE >= hoje && e.Nome.toLowerCase().trim().includes(meuNome);
+        })
+        .sort((a, b) => new Date(a.Data) - new Date(b.Data));
+
+      const kpiProxima = document.getElementById('kpi-proxima');
+      if (escalasUsuario.length > 0) {
+        const primeira = escalasUsuario[0];
+        const dataRef = primeira.Data;
+        const cultoRef = primeira["Nome dos Cultos"];
+
+        // Pega todas as funções para o mesmo dia e culto
+        const funcoes = escalasUsuario
+          .filter(e => e.Data === dataRef && e["Nome dos Cultos"] === cultoRef)
+          .map(e => e.Função);
+
+        const funcoesUnicas = [...new Set(funcoes)].join(', ');
+        const d = new Date(primeira.Data);
+        const dataStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+        kpiProxima.innerHTML = `
+          <div style="font-weight:bold; color:var(--primary);">${cultoRef.split(' ')[0]} (${dataStr})</div>
+          <div style="font-size:0.65rem; color:#7f8c8d; margin-top:2px;">Função: ${funcoesUnicas}</div>
+        `;
+        kpiProxima.style.fontSize = '0.9rem'; // Reset to base for the div structure
+      } else {
+        kpiProxima.innerText = "Nenhuma";
+        kpiProxima.style.fontSize = '1rem';
+      }
 
       renderizarGrafico(listaOrdenada);
     }

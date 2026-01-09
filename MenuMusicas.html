@@ -15,6 +15,7 @@
             --primary: #2c3e50;
             --accent: #3498db;
             --bg: #f4f7f6;
+            --lt: #3498db;
         }
 
         body {
@@ -76,8 +77,55 @@
 
         .chart-wrapper {
             position: relative;
-            height: 350px;
+            height: 250px;
             width: 100%;
+        }
+
+        .analytics-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-lbl {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .chart-card-small {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 600px) {
+            .analytics-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* GRID DE SUBMENUS */
@@ -152,15 +200,33 @@
         <div class="header">
             <button class="nav-btn" onclick="window.location.href='index.html'"><i
                     class="fas fa-arrow-left"></i></button>
-            <h2><i class="fas fa-crown" style="color: #f1c40f;"></i> Top Músicas</h2>
+            <h2><i class="fas fa-music"></i> Total de Músicas (<span id="totalHeader">0</span>)</h2>
             <button class="nav-btn" onclick="loadStats(true)"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
+        <!-- ANALYTICS SECUNDÁRIOS -->
+        <div class="analytics-row">
+            <div class="chart-card-small">
+                <div class="stat-lbl" style="margin-bottom:10px; font-weight:bold; text-align:center;">Gráfico de
+                    Estilos</div>
+                <div class="chart-wrapper" style="height: 180px;">
+                    <canvas id="chartEstilos"></canvas>
+                </div>
+            </div>
+            <div class="chart-card-small">
+                <div class="stat-lbl" style="margin-bottom:10px; font-weight:bold; text-align:center;">Gráfico de Temas
+                </div>
+                <div class="chart-wrapper" style="height: 180px;">
+                    <canvas id="chartTemas"></canvas>
+                </div>
+            </div>
         </div>
 
         <!-- GRÁFICO MAIS TOCADAS -->
         <div class="chart-card">
-            <h3>Mais Tocadas (Repertório)</h3>
+            <h3 style="margin-bottom: 15px;">Mais Tocadas (Repertório)</h3>
             <div id="loader"><i class="fas fa-sync fa-spin"></i></div>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper" style="height: 300px;">
                 <canvas id="chartMusicas"></canvas>
             </div>
         </div>
@@ -190,11 +256,13 @@
         const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
 
         function loadStats(force = false) {
-            const cached = localStorage.getItem('offline_repertorio');
-            if (!force && cached) {
+            const cachedRep = localStorage.getItem('offline_repertorio');
+            const cachedMus = localStorage.getItem('offline_musicas');
+
+            if (!force && cachedRep && cachedMus) {
                 document.getElementById('loader').style.display = 'none';
-                renderChart(JSON.parse(cached));
-                setTimeout(() => silentSync(), 1000);
+                processData(JSON.parse(cachedRep), JSON.parse(cachedMus));
+                setTimeout(() => fetchStats(), 1000);
             } else {
                 fetchStats();
             }
@@ -202,29 +270,32 @@
 
         async function fetchStats() {
             const loader = document.getElementById('loader');
-            loader.style.display = 'block';
+            if (loader) loader.style.display = 'block';
             try {
-                const res = await fetch(SCRIPT_URL + "?sheet=Repertório");
-                const json = await res.json();
-                localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
-                renderChart(json.data);
-                loader.style.display = 'none';
+                // Fetch Repertório
+                const resRep = await fetch(SCRIPT_URL + "?sheet=Repertório");
+                const jsonRep = await resRep.json();
+                localStorage.setItem('offline_repertorio', JSON.stringify(jsonRep.data));
+
+                // Fetch Músicas
+                const resMus = await fetch(SCRIPT_URL + "?sheet=Musicas");
+                const jsonMus = await resMus.json();
+                localStorage.setItem('offline_musicas', JSON.stringify(jsonMus.data));
+
+                processData(jsonRep.data, jsonMus.data);
+                if (loader) loader.style.display = 'none';
             } catch (e) {
-                loader.innerText = "Erro ao carregar dados.";
+                if (loader) loader.innerText = "Erro ao carregar dados.";
             }
         }
 
-        async function silentSync() {
-            try {
-                const res = await fetch(SCRIPT_URL + "?sheet=Repertório");
-                const json = await res.json();
-                localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
-                renderChart(json.data);
-            } catch (e) { console.log("Silent sync failed"); }
+        function processData(repertorio, musicas) {
+            renderChartMaisTocadas(repertorio);
+            renderAnalyticsMusicas(musicas);
         }
 
-        let myChart = null;
-        function renderChart(data) {
+        let chartMaisTocadas = null;
+        function renderChartMaisTocadas(data) {
             const contagem = {};
             data.forEach(m => {
                 if (m.Músicas) contagem[m.Músicas] = (contagem[m.Músicas] || 0) + 1;
@@ -235,9 +306,9 @@
                 .slice(0, 10);
 
             const ctx = document.getElementById('chartMusicas').getContext('2d');
-            if (myChart) myChart.destroy();
+            if (chartMaisTocadas) chartMaisTocadas.destroy();
 
-            myChart = new Chart(ctx, {
+            chartMaisTocadas = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: sorted.map(x => x[0]),
@@ -258,6 +329,69 @@
                     }
                 }
             });
+        }
+
+        async function silentSync() {
+            try {
+                const res = await fetch(SCRIPT_URL + "?sheet=Repertório");
+                const json = await res.json();
+                localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
+                renderChart(json.data);
+            } catch (e) { console.log("Silent sync failed"); }
+        }
+
+        let chartEstilos = null;
+        let chartTemas = null;
+        function renderAnalyticsMusicas(data) {
+            document.getElementById('totalHeader').innerText = data.length;
+
+            // 1. Gráfico de Estilos
+            const estilos = data.reduce((acc, m) => {
+                const est = m.Estilo || "Outros";
+                acc[est] = (acc[est] || 0) + 1;
+                return acc;
+            }, {});
+
+            renderDoughnut('chartEstilos', chartEstilos, estilos, (c) => chartEstilos = c);
+
+            // 2. Gráfico de Temas
+            const temas = data.reduce((acc, m) => {
+                const tema = m.Tema || "Geral";
+                acc[tema] = (acc[tema] || 0) + 1;
+                return acc;
+            }, {});
+
+            renderDoughnut('chartTemas', chartTemas, temas, (c) => chartTemas = c);
+        }
+
+        function renderDoughnut(canvasId, chartVar, dataObj, setVar) {
+            const labels = Object.keys(dataObj);
+            const values = Object.values(dataObj);
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            if (chartVar) chartVar.destroy();
+
+            const newChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            '#3498db', '#e67e22', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#7f8c8d'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } }
+                    }
+                }
+            });
+            setVar(newChart);
         }
 
         function applyPermissions() {

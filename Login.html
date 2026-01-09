@@ -116,12 +116,13 @@
 
         <div class="input-group">
             <label for="user">Nome (Conforme Planilha)</label>
-            <input type="text" id="user" placeholder="Ex: João Silva">
+            <input type="text" id="user" placeholder="Ex: João Silva"
+                onkeypress="if(event.key === 'Enter') fazerLogin()">
         </div>
 
         <div class="input-group">
             <label for="pass">Senha</label>
-            <input type="password" id="pass" placeholder="******">
+            <input type="password" id="pass" placeholder="******" onkeypress="if(event.key === 'Enter') fazerLogin()">
         </div>
 
         <button class="btn-login" onclick="fazerLogin()">Entrar</button>
