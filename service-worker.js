@@ -1,4 +1,4 @@
-const CACHE_NAME = 'louvor-app-v22';
+const CACHE_NAME = 'louvor-app-v23';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -52,18 +52,29 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Strategy: Stale-While-Revalidate for most things, Network First for API
   const url = new URL(event.request.url);
 
-  // If it's the Google Script API, try network first, then fall back to cache? 
-  // Actually, usually we want fresh data. If offline, maybe cache?
-  // For simplicity, let's use Network First for everything to ensure freshness, 
-  // falling back to cache if offline.
+  // Estratégia Cache First para Imagens
+  if (/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(url.pathname) || url.pathname.includes('/drive-viewer/')) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then((networkResponse) => {
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, cacheCopy);
+          });
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
 
+  // Estratégia Network First para o restante (Scripts, HTML, APIs)
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone the response to store in cache
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);

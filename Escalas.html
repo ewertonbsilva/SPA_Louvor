@@ -183,6 +183,27 @@
       color: #999;
     }
 
+    .btn-ausencia {
+      background: #fdf2f2;
+      color: #e74c3c;
+      border: 1px solid #fadbd8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: 0.2s;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .btn-ausencia:hover {
+      background: #e74c3c;
+      color: white;
+    }
+
     .musica-item {
       background: var(--music-bg);
       color: #5d4037;
@@ -432,15 +453,23 @@
           <div class="content-grid">
             <div>
               <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
-              ${item.membros.map(m => `
+              ${item.membros.map(m => {
+          const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+          const isMe = userToken.Name && m.nome.toLowerCase().trim().includes(userToken.Name.toLowerCase().trim());
+          return `
                 <div class="member-item">
                   <i class="fas ${iconsMap[m.funcao.split(' ')[0]] || 'fa-star'}"></i>
                   <div class="member-info">
                     <span class="m-nome">${m.nome}</span>
                     <span class="m-funcao">${m.funcao}</span>
                   </div>
+                  ${isMe ? `
+                    <button class="btn-ausencia" onclick="comunicarAusencia('${m.nome}', '${dataFormatada}', '${item.info["Nome dos Cultos"]}', event)">
+                      <i class="fas fa-exclamation-triangle"></i> Ausência
+                    </button>
+                  ` : ''}
                 </div>
-              `).join('')}
+              `}).join('')}
             </div>
             <div>
               <div class="section-title-container">
@@ -453,9 +482,9 @@
               </div>
               <div class="repertorio-list">
                 ${musicasDoCulto.length > 0 ? musicasDoCulto.map(m => {
-          const queryBusca = encodeURIComponent(`${m.Músicas}`);
-          const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
-          return `
+            const queryBusca = encodeURIComponent(`${m.Músicas}`);
+            const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
+            return `
                   <div class="musica-item">
                     <span class="m-nome-musica">${m.Músicas}</span>
                     <span class="m-cantor">
@@ -474,7 +503,7 @@
                       <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>`;
-        }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
+          }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
               </div>
             </div>
           </div>
@@ -514,6 +543,44 @@
         alert("Erro na conexão.");
         btn.innerHTML = originalContent;
         btn.disabled = false;
+      }
+    }
+
+    async function comunicarAusencia(nome, dataCulto, nomeCulto, event) {
+      event.stopPropagation();
+      const info = prompt(`Olá ${nome}, por favor informe o motivo da possível ausência para o culto do dia ${dataCulto} (${nomeCulto}):`);
+
+      if (!info || info.trim() === "") return;
+
+      const id_Lembrete = Math.random().toString(16).slice(2, 10);
+      const payload = {
+        sheet: "Lembretes",
+        id_Lembrete,
+        Componente: nome,
+        Data: new Date().toISOString(),
+        Culto: `${nomeCulto} (${dataCulto})`,
+        Info: info
+      };
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.status === "success") {
+          alert("✅ Ausência comunicada com sucesso! A liderança será notificada.");
+        } else {
+          alert("⚠️ Erro ao enviar: " + res.message);
+        }
+      } catch (e) {
+        // Fallback para persistência offline via SyncManager se disponível
+        if (window.SyncManager) {
+          SyncManager.addToQueue(payload);
+          alert("☁️ Você está offline. O aviso será enviado assim que houver conexão.");
+        } else {
+          alert("❌ Erro de conexão. Tente novamente mais tarde.");
+        }
       }
     }
 

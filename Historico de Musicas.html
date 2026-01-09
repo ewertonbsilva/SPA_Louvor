@@ -344,7 +344,7 @@
             estilosHtml += `
               <div class="estilo-section">
                 <div class="estilo-header" onclick="this.parentElement.classList.toggle('open')">
-                  <h4><i class="fas fa-tag"></i> ${estilo} <span class="count">${musicas.length}</span></h4>
+                  <h4><i class="fas ${estilo === 'Adoração' ? 'fa-hands-praying' : (estilo === 'Celebração' ? 'fa-face-laugh-beam' : 'fa-tag')}"></i> ${estilo} <span class="count">${musicas.length}</span></h4>
                   <i class="fas fa-chevron-down arrow"></i>
                 </div>
                 <div class="estilo-content">
