@@ -29,6 +29,42 @@
       }
     }
 
+    /* Cores para os Ícones no Modal do Calendário */
+    .member-item i.Ministro {
+      color: #3498db !important;
+    }
+
+    .member-item i.Back {
+      color: #1abc9c !important;
+    }
+
+    .member-item i.Violão {
+      color: #e67e22 !important;
+    }
+
+    .member-item i.Guitarra {
+      color: #e74c3c !important;
+    }
+
+    .member-item i.Teclado {
+      color: #f1c40f !important;
+    }
+
+    .member-item i.Bateria {
+      color: #2ecc71 !important;
+    }
+
+    .member-item i.Baixo {
+      color: #9b59b6 !important;
+    }
+
+    /* Ajuste no ícone para não ficar colado no texto */
+    .member-item i {
+      width: 20px;
+      text-align: center;
+      margin-right: 5px;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg);
@@ -426,9 +462,13 @@
     let globalRepertorio = {};
     let globalLembretes = [];
     const iconsMap = {
-      "Ministro": "fa-microphone-lines", "Back": "fa-microphone", "Violão": "fa-guitar",
-      "Guitarra": "fa-guitar-electric", "Teclado": "fa-keyboard", "Bateria": "fa-drum",
-      "Baixo": "fa-drum-steelpan"
+      "Ministro": "fa-microphone-lines",
+      "Back": "fa-microphone",
+      "Violão": "fa-guitar",
+      "Guitarra": "fa-guitar",
+      "Teclado": "fa-keyboard",
+      "Bateria": "fa-drum",
+      "Baixo": "fa-guitar"
     };
 
     async function loadData() {
@@ -666,12 +706,22 @@
              </div>
              <div class="culto-body">
                <div style="font-weight:bold; margin-bottom:5px; color:#aaa; font-size:0.7rem">EQUIPE</div>
-               ${c.membros.map(m => `
-                 <div class="member-item">
-                   <span><i class="fa-solid ${iconsMap[m.Função.split(',')[0].trim()] || 'fa-user'}" style="color:var(--accent)"></i> ${m.Nome}</span>
-                   <span style="color:#888; font-size:0.75rem">${m.Função}</span>
-                 </div>
-               `).join('')}
+${c.membros.map(m => {
+          // Pega a primeira palavra da função para definir a cor (ex: "Violão" de "Violão 1")
+          const categoria = m.Função.split(' ')[0].trim();
+          // Busca o desenho do ícone no mapa
+          const iconeBase = iconsMap[categoria] || 'fa-user';
+
+          return `
+      <div class="member-item">
+        <span>
+          <i class="fa-solid ${iconeBase} ${categoria}"></i> 
+          ${m.Nome}
+        </span>
+        <span style="color:#888; font-size:0.75rem">${m.Função}</span>
+      </div>
+    `;
+        }).join('')}
                
                ${globalLembretes.filter(l => {
           const dataAviso = new Date(dateStr + "T12:00:00").toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
