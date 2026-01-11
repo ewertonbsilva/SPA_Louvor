@@ -147,16 +147,58 @@
       text-decoration: underline;
     }
 
-    .install-banner {
+    #installBanner {
       display: none;
-      background: #3498db;
-      color: white;
-      padding: 15px;
-      width: 100%;
       position: fixed;
-      bottom: 0;
-      text-align: center;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      z-index: 10001;
+      animation: slideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .install-content {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .install-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-instalar {
+      background: #2c3e50;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: bold;
       cursor: pointer;
+      margin-left: auto;
     }
 
     .user-welcome {
@@ -631,8 +673,15 @@
     </div>
   </div>
 
-  <div id="installBanner" class="install-banner">
-    <i class="fas fa-download"></i> Instalar Aplicativo
+  <div id="installBanner">
+    <div class="install-content">
+      <img src="assets/backgroud.png" class="install-icon" alt="Logo">
+      <div>
+        <strong style="display:block; color:#2c3e50">Louvor CEVD</strong>
+        <small style="color:#7f8c8d">Instale o app para acesso offline</small>
+      </div>
+      <button class="btn-instalar" id="btnInstall">INSTALAR</button>
+    </div>
   </div>
 
   <script>
@@ -911,15 +960,27 @@
       solicitarPermisaoNotificacao();
 
       // Listener para atualizar o gráfico se os dados mudarem em outra aba/página
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'offline_escala') {
-          console.log("Dados de escala alterados, atualizando dashboard...");
-          initDashboard();
-        }
-        if (e.key === 'user_notificacoes') {
-          atualizarBadge();
-        }
+      let deferredPrompt;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        const banner = document.getElementById('installBanner');
+        banner.style.display = 'block';
+
+        document.getElementById('btnInstall').addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Usuário respondeu à instalação: ${outcome}`);
+            deferredPrompt = null;
+            banner.style.animation = 'slideDown 0.5s reverse forwards'; // Animação de saída
+            setTimeout(() => banner.style.display = 'none', 500);
+          }
+        });
       });
+
 
       setTimeout(backgroundSync, 5000); // Primeiro sync após 5s
       setInterval(backgroundSync, 300000); // Repete a cada 5 min (300000ms)
@@ -1158,15 +1219,59 @@
     }
 
     function showUpdateToast() {
+      // Remove se já existir algum para não duplicar
+      const existing = document.getElementById('update-toast');
+      if (existing) existing.remove();
+
       const toast = document.createElement('div');
+      toast.id = 'update-toast';
+
+      // Estilização corrigida
       Object.assign(toast.style, {
-        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-        background: '#333', color: '#fff', padding: '10px 20px', borderRadius: '8px',
-        zIndex: '9999', display: 'flex', gap: '15px', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+        position: 'fixed',
+        bottom: '30px',
+        left: '20px',
+        right: '20px',
+        background: 'rgba(44, 62, 80, 0.95)',
+        backdropFilter: 'blur(10px)',
+        webkitBackdropFilter: 'blur(10px)',
+        color: '#fff',
+        padding: '16px 20px',
+        borderRadius: '16px',
+        zIndex: '10000',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.1)'
       });
-      toast.innerHTML = `<span>Nova versão disponível!</span> <button onclick="window.location.reload()" style="background:#3498db;border:none;color:white;padding:5px 12px;border-radius:4px;cursor:pointer">Atualizar</button>`;
+
+      // HTML com crases para evitar erro de aspas
+      toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px">
+      <div style="background:#3498db; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center">
+        <i class="fas fa-cloud-download-alt"></i>
+      </div>
+      <div>
+        <strong style="display:block; font-size:14px">Atualização Disponível</strong>
+        <small style="opacity:0.8; font-size:12px">Novos recursos instalados!</small>
+      </div>
+    </div>
+    <button id="btn-refresh-app" 
+            style="background:#3498db; border:none; color:white; padding:10px 18px; border-radius:10px; font-weight:bold; cursor:pointer">
+      ATUALIZAR
+    </button>
+  `;
+
       document.body.appendChild(toast);
+
+      // Adiciona o evento de clique de forma separada para evitar erro de aspas no HTML
+      document.getElementById('btn-refresh-app').addEventListener('click', function () {
+        this.innerHTML = '<i class="fas fa-sync fa-spin"></i>';
+        window.location.reload();
+      });
     }
+
 
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {

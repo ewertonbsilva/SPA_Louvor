@@ -1,11 +1,20 @@
 {
   "name": "Louvor CEVD",
   "short_name": "Louvor CEVD",
+  "description": "Gestão de Escalas e Repertórios - CEVD",
+  "id": "/louvor-cevd-app",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#2c3e50",
   "theme_color": "#2c3e50",
   "icons": [
+    {
+      "src": "assets/backgroud.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "assets/backgroud.png",
       "sizes": "192x192",
@@ -22,7 +31,29 @@
       "src": "assets/backgroud.png",
       "sizes": "679x679",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Escalas",
+      "url": "./Escalas.html",
+      "icons": [
+        {
+          "src": "assets/backgroud.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Repertório",
+      "url": "./Repertorio.html",
+      "icons": [
+        {
+          "src": "assets/backgroud.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
