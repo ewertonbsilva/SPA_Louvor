@@ -25,6 +25,51 @@
       --lt: #3498db;
     }
 
+    /* Estilo comum para todos os ícones da lista */
+    .member-item i {
+      font-size: 1.2rem;
+      filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.2));
+    }
+
+    /* Cores específicas baseadas na categoria */
+    .member-item i.Violão {
+      color: #e67e22;
+    }
+
+    /* Laranja */
+    .member-item i.Guitarra {
+      color: #e74c3c;
+    }
+
+    /* Vermelho/Coral */
+    .member-item i.Baixo {
+      color: #9b59b6;
+    }
+
+    /* Roxo */
+
+    /* Outras cores do gráfico */
+    .member-item i.Ministro {
+      color: #3498db;
+    }
+
+    /* Azul */
+    .member-item i.Back {
+      color: #1abc9c;
+    }
+
+    /* Ciano */
+    .member-item i.Teclado {
+      color: #f1c40f;
+    }
+
+    /* Amarelo */
+    .member-item i.Bateria {
+      color: #2ecc71;
+    }
+
+    /* Verde */
+
     body {
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg);
@@ -351,10 +396,14 @@
     const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
 
     const iconsMap = {
-      "Ministro": "fa-microphone-lines", "Back": "fa-microphone", "Violão": "fa-guitar",
-      "Guitarra": "fa-solid fa-guitar-electric", "Teclado": "fa-keyboard", "Bateria": "fa-drum", "Baixo": "fa-mandolin"
+      "Ministro": "fa-microphone-lines",
+      "Back": "fa-microphone",
+      "Violão": "fa-guitar",
+      "Guitarra": "fa-guitar",
+      "Teclado": "fa-keyboard",
+      "Bateria": "fa-drum",
+      "Baixo": "fa-guitar"
     };
-
     async function loadAll(forceUpdate = false) {
       const loader = document.getElementById('loader');
       const cachedEscala = localStorage.getItem('offline_escala');
@@ -490,15 +539,19 @@
                   </button>
                 ` : ''}
               </div>
-              ${item.membros.map(m => `
-                <div class="member-item">
-                  <i class="fas ${iconsMap[m.funcao.split(' ')[0]] || 'fa-star'}"></i>
-                  <div class="member-info">
-                    <span class="m-nome">${m.nome}</span>
-                    <span class="m-funcao">${m.funcao}</span>
-                  </div>
-                </div>
-              `).join('')}
+        ${item.membros.map(m => {
+          const categoria = m.funcao.split(' ')[0]; // Pega "Violão", "Guitarra", etc.
+          const iconeBase = iconsMap[categoria] || 'fa-star';
+
+          return `
+          <div class="member-item">
+            <i class="fa-solid ${iconeBase} ${categoria}"></i>
+            <div class="member-info">
+                <span class="m-nome">${m.nome}</span>
+                <span class="m-funcao">${m.funcao}</span>
+            </div>
+            </div>`;
+        }).join('')}
 
               ${avisosDoCulto.length > 0 ? `
                 <div class="extra-section" style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px;">
