@@ -767,25 +767,25 @@
 
       dados.forEach(item => {
         const dataItem = new Date(item.Data);
-        if (dataItem >= hoje) {
-          const nome = item.Nome;
-          const idCulto = item.Cultos;
-          const nomeCulto = item["Nome dos Cultos"];
-          const funcao = item["Função"];
-          const dataFmt = dataItem.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        // O filtro de data foi removido para processar todos os itens
 
-          cultosUnicosGerais.add(idCulto);
+        const nome = item.Nome;
+        const idCulto = item.Cultos;
+        const nomeCulto = item["Nome dos Cultos"];
+        const funcao = item["Função"];
+        const dataFmt = dataItem.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-          if (!contagemMembros[nome]) contagemMembros[nome] = new Set();
-          contagemMembros[nome].add(idCulto);
+        cultosUnicosGerais.add(idCulto);
 
-          if (!participacoesDetalhas[nome]) participacoesDetalhas[nome] = {};
-          if (!participacoesDetalhas[nome][idCulto]) {
-            participacoesDetalhas[nome][idCulto] = { data: dataFmt, nomeCulto: nomeCulto, funcoes: [] };
-          }
-          if (!participacoesDetalhas[nome][idCulto].funcoes.includes(funcao)) {
-            participacoesDetalhas[nome][idCulto].funcoes.push(funcao);
-          }
+        if (!contagemMembros[nome]) contagemMembros[nome] = new Set();
+        contagemMembros[nome].add(idCulto);
+
+        if (!participacoesDetalhas[nome]) participacoesDetalhas[nome] = {};
+        if (!participacoesDetalhas[nome][idCulto]) {
+          participacoesDetalhas[nome][idCulto] = { data: dataFmt, nomeCulto: nomeCulto, funcoes: [] };
+        }
+        if (!participacoesDetalhas[nome][idCulto].funcoes.includes(funcao)) {
+          participacoesDetalhas[nome][idCulto].funcoes.push(funcao);
         }
       });
 
