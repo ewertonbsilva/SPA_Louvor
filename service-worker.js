@@ -71,6 +71,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  self.addEventListener('periodicsync', (event) => {
+    if (event.tag === 'update-louvor-data') {
+      // Chama a função de atualização (certifique-se de que o SW consiga acessar o Fetch)
+      event.waitUntil(backgroundFetchLogic());
+    }
+  });
+
   // Estratégia Network First para o restante (Scripts, HTML, APIs)
   event.respondWith(
     fetch(event.request)
