@@ -1,4 +1,5 @@
-const CACHE_NAME = 'louvor-app-v38';
+importScripts('config.js');
+const CACHE_NAME = APP_CONFIG.CACHE_NAME;
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
