@@ -719,7 +719,7 @@
     </div>
     <h2 class="header-title">Louvor CEVD</h2>
     <div class="header-actions">
-      <button class="nav-btn admin-only" onclick="abrirModalAvisoGeral()" title="Mandar Aviso Geral">
+      <button class="nav-btn" onclick="abrirModalAvisoGeral()" title="Mandar Aviso para o Lider">
         <i class="fas fa-bullhorn"></i>
       </button>
       <button class="nav-btn" onclick="abrirModalPerfil()" title="Meu Perfil">
@@ -1249,25 +1249,46 @@
         }
       });
 
-      // 2. Verificar Avisos em cultos que estou escalado
+      // 2. Verificar Avisos e Avisos Lider
       const meusCultosIds = new Set(escalas.filter(e => e.Nome.toLowerCase().trim().includes(meuNome)).map(e => e.Cultos));
-      lembretes.forEach(l => {
-        // Lógica de vínculo: Se o culto do lembrete estiver nos meus cultos
-        const id = `AVISO-${l.id_Lembrete}`;
-        if (!hashesConhecidos.has(id)) {
-          // Verifica se o lembrete pertence a um culto onde estou
-          const matchesMe = meusCultosIds.has(l.Culto.split('(')[0].trim()) || (l.Culto && meusCultosIds.has(l.Culto));
-          let escalaMatch = escalas.find(e => l.Culto.includes(e["Nome dos Cultos"]) && l.Culto.includes(new Date(e.Data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })) && e.Nome.toLowerCase().trim().includes(meuNome));
 
-          if (escalaMatch && l.Componente.toLowerCase().trim() !== meuNome) {
+      const isLiderOrAdmin = user.Role === 'Lider' || user.Role === 'Admin' || user.Role === 'SuperAdmin';
+
+      lembretes.forEach(l => {
+        const id = `AVISO-${l.id_Lembrete}`;
+        if (hashesConhecidos.has(id)) return;
+
+        // CASO 1: AVISO LIDER (Visível para Lider, Admin ou Autor)
+        if (l.Culto === "AVISO_LIDER") {
+          const isAuthor = l.Componente.toLowerCase().trim() === meuNome;
+
+          if (isLiderOrAdmin || isAuthor) {
             notificacoes.unshift({
-              id, type: 'aviso', read: false, time: Date.now(),
-              msg: `Novo aviso no seu culto ${l.Culto}: ${l.Componente} disse "${l.Info}"`
+              id, type: 'aviso_lider', read: false, time: Date.now(),
+              msg: `Aviso Lider de ${l.Componente}: "${l.Info}"`,
+              rawId: l.id_Lembrete, // Guardar ID original para delete server-side
+              isAuthor: isAuthor // Flag para saber se pode deletar
             });
             conhecidasMaster.push(id);
             hashesConhecidos.add(id);
-            mostrarNotificacaoNativa("Novo Aviso! 🔔", `${l.Componente}: ${l.Info}`);
+            mostrarNotificacaoNativa("Aviso Lider 🔔", `${l.Componente}: ${l.Info}`);
           }
+          return;
+        }
+
+        // CASO 2: AVISO NORMAL DE ESCALA
+        // Verifica se o lembrete pertence a um culto onde estou
+        const matchesMe = meusCultosIds.has(l.Culto.split('(')[0].trim()) || (l.Culto && meusCultosIds.has(l.Culto));
+        let escalaMatch = escalas.find(e => l.Culto.includes(e["Nome dos Cultos"]) && l.Culto.includes(new Date(e.Data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })) && e.Nome.toLowerCase().trim().includes(meuNome));
+
+        if (escalaMatch && l.Componente.toLowerCase().trim() !== meuNome) {
+          notificacoes.unshift({
+            id, type: 'aviso', read: false, time: Date.now(),
+            msg: `Novo aviso no seu culto ${l.Culto}: ${l.Componente} disse "${l.Info}"`
+          });
+          conhecidasMaster.push(id);
+          hashesConhecidos.add(id);
+          mostrarNotificacaoNativa("Novo Aviso! 🔔", `${l.Componente}: ${l.Info}`);
         }
       });
 
@@ -1372,9 +1393,41 @@
       document.getElementById('notifModal').style.display = 'flex';
     }
 
-    function excluirNotificacao(id, event) {
+    async function excluirNotificacao(id, event) {
       if (event) event.stopPropagation();
       let notifs = JSON.parse(localStorage.getItem('user_notificacoes') || '[]');
+      const target = notifs.find(n => n.id === id);
+
+      // DELETAR DO SERVIDOR? (Apenas Aviso Lider)
+      if (target && target.type === 'aviso_lider') {
+        const user = JSON.parse(localStorage.getItem('user_token') || '{}');
+        const isLiderOrAdmin = user.Role === 'Lider' || user.Role === 'Admin' || user.Role === 'SuperAdmin';
+        const isAuthor = target.isAuthor;
+
+        if (isLiderOrAdmin || isAuthor) {
+          if (confirm("Deseja apagar este aviso para TODOS (do servidor)?")) {
+            try {
+              // Feedback visual
+              if (event && event.target) {
+                event.target.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+              }
+
+              await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                  action: "delete",
+                  sheet: "Lembretes",
+                  id_Lembrete: target.rawId
+                })
+              });
+              alert("Aviso removido do servidor!");
+            } catch (e) {
+              alert("Erro ao apagar do servidor. Apagando apenas localmente.");
+            }
+          }
+        }
+      }
+
       notifs = notifs.filter(n => n.id !== id);
       localStorage.setItem('user_notificacoes', JSON.stringify(notifs));
       abrirNotificacoes(); // Re-renderiza o modal
@@ -1628,17 +1681,19 @@
   <div id="avisoGeralModal" class="modal">
     <div class="modal-content">
       <span class="close-modal" onclick="fecharModalAvisoGeral()">&times;</span>
-      <div class="modal-header">
-        <h3 style="margin:0; font-size: 1.1rem;"><i class="fas fa-bullhorn"></i> Mandar Aviso Geral</h3>
-        <small style="color: #7f8c8d;">Visível apenas para Admin e SuperAdmin</small>
+      <div class="modal-header"
+        style="display: block; border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="margin:0; font-size: 1.1rem; display:block;"><i class="fas fa-bullhorn"></i> Mandar Aviso para o
+          Lider</h3>
+        <div style="color: #7f8c8d; font-size: 0.8rem; margin-top: 5px;">Visível para Lideres e você</div>
       </div>
 
       <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
         <div class="input-group">
-          <label style="font-size: 0.8rem; color: #7f8c8d;">Mensagem do Aviso</label>
+          <label style="font-size: 0.8rem; color: #7f8c8d;">Mensagem</label>
           <textarea id="textoAvisoGeral" rows="4"
             style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #ddd; resize: vertical; max-height: 200px; font-family:inherit;"
-            placeholder="Digite o aviso para a equipe..."></textarea>
+            placeholder="Digite o aviso para o Lider..."></textarea>
         </div>
 
         <button id="btnEnviarAvisoGeral" onclick="enviarAvisoGeral()"
