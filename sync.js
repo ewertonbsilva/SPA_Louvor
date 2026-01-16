@@ -90,7 +90,9 @@ const SyncManager = {
                 { key: 'offline_escala', sheet: 'Transformar' },
                 { key: 'offline_repertorio', sheet: 'Repertório' },
                 { key: 'offline_musicas', sheet: 'Musicas' },
-                { key: 'offline_lembretes', sheet: 'Lembretes' }
+                { key: 'offline_lembretes', sheet: 'Lembretes' },
+                { key: 'offline_consagracao', sheet: 'Consagração' },
+                { key: 'offline_chamada', sheet: 'Comp_Cons' }
             ];
 
             for (const item of endpoints) {

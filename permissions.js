@@ -16,11 +16,11 @@ const PERMISSIONS = {
     ACCESS_CONTROL: {
         "Lider": {
             allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],
-            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html"]
+            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html", "Chamada.html"]
         },
         "Admin": {
             allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],
-            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html"]
+            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html", "Chamada.html"]
         },
         "Advanced": {
             allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],

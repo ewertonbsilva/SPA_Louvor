@@ -20,6 +20,7 @@ const ASSETS_TO_CACHE = [
   './AcessoMesa.html',
   './Historico de Musicas.html',
   './Imagens.html',
+  './Chamada.html',
   './assets/Leão.png',
   './assets/backgroud.png',
   './manifest.json',
