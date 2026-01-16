@@ -8,6 +8,7 @@
   <script src="config.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+  <link rel="stylesheet" href="assets/css/main.css">
   <style>
     :root {
       --primary: #2c3e50;
@@ -38,18 +39,20 @@
     }
 
     .header-bar {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      padding: 10px 15px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      width: 100%;
-      box-sizing: border-box;
-      position: sticky;
+      padding: 0 20px;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 1000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .header-title {
@@ -84,22 +87,25 @@
 
     /* Acordeão de Temas */
     .tema-section {
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      margin-bottom: 15px;
+      border-radius: var(--radius-lg);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(0, 0, 0, 0.02);
       overflow: hidden;
     }
 
     .tema-header {
       background: var(--primary);
       color: white;
-      padding: 15px 20px;
+      padding: 18px 20px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1.2rem;
-      font-weight: bold;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .tema-content {
@@ -115,24 +121,26 @@
     }
 
     .estilo-header {
-      padding: 12px 30px;
+      padding: 14px 20px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #f9f9f9;
-      color: var(--accent);
-      font-weight: bold;
-      text-transform: uppercase;
+      background: #f8fafc;
+      color: var(--text-main);
+      font-weight: 700;
       font-size: 0.9rem;
+      border-bottom: 1px solid #f1f5f9;
     }
 
     .estilo-header .count {
-      background: rgba(230, 126, 34, 0.1);
-      color: var(--accent);
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
+      background: white;
+      color: var(--primary);
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      box-shadow: var(--shadow-sm);
     }
 
     .estilo-content {
@@ -146,7 +154,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 15px;
-      padding: 15px 30px;
+      padding: 15px 5px;
     }
 
     .music-card {
@@ -333,12 +341,14 @@
   </div>
 
   <div class="search-container"
-    style="padding: 10px 15px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 60px; z-index: 999;">
-    <input type="text" id="searchInput" placeholder="Pesquisar música ou artista..." onkeyup="filterMusics()"
-      style="width: 100%; padding: 10px 20px; border-radius: 50px; border: 2px solid #dfe6e9; outline: none; box-sizing: border-box;">
+    style="padding: 15px; background: var(--glass); backdrop-filter: blur(8px); border-bottom: 1px solid #f1f5f9; position: fixed; top: 70px; left:0; right:0; z-index: 999;">
+    <div style="max-width: 500px; margin: 0 auto;">
+      <input type="text" id="searchInput" placeholder="Pesquisar música ou artista..." onkeyup="filterMusics()"
+        class="premium-input" style="margin-bottom: 0; box-shadow: var(--shadow-sm);">
+    </div>
   </div>
 
-  <div class="container" style="padding: 20px 15px;">
+  <div class="premium-container" style="max-width: 1100px; padding-top: 170px;">
 
     <div id="loader" class="loading" style="display:none"><i class="fas fa-list-ul fa-spin"></i> Organizando por Tema e
       Estilo...</div>
@@ -447,15 +457,17 @@
               const linkLT = `https://www.letras.mus.br/?q=${query}`;
 
               const card = document.createElement('div');
-              card.className = 'music-card';
+              card.className = 'premium-card';
+              card.style.padding = '15px';
+              card.style.position = 'relative';
               card.setAttribute('data-search', `${m.Músicas} ${m.Cantor}`.toLowerCase());
               card.innerHTML = `
             <button class="btn-del-lib" onclick="excluirDaBiblioteca('${m.Músicas}', '${m.Cantor}')" title="Excluir">
               <i class="fas fa-trash-alt"></i>
             </button>
             <div class="music-info">
-              <h3>${m.Músicas}</h3>
-              <p><i class="fas fa-microphone"></i> ${m.Cantor}</p>
+              <h3 class="font-heading" style="font-size: 1rem; margin-bottom: 4px; padding-right: 25px;">${m.Músicas}</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;"><i class="fas fa-microphone me-1"></i> ${m.Cantor}</p>
             </div>
             <div class="actions">
               <a href="${linkYT}" target="_blank" class="btn btn-yt"><i class="fab fa-youtube"></i> Video</a>

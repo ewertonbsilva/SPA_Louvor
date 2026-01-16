@@ -9,133 +9,117 @@
     <script src="config.js"></script>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+    <link rel="stylesheet" href="assets/css/main.css">
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
+            padding: 20px;
         }
 
-        .login-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            width: 85%;
-            max-width: 320px;
+        .login-card {
+            width: 100%;
+            max-width: 360px;
+            padding: 40px 30px;
             text-align: center;
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            animation: modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 20%;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90px;
+            height: 90px;
+            border-radius: 22px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            object-fit: cover;
         }
 
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
+        .login-title {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
-        .input-group {
-            margin-bottom: 15px;
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+            font-weight: 500;
+        }
+
+        .input-group-custom {
             text-align: left;
+            margin-bottom: 20px;
         }
 
-        .input-group label {
+        .input-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
             display: block;
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin-bottom: 5px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .input-group input:focus {
-            border-color: #3498db;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn-login:hover {
-            background: #2980b9;
-        }
-
-        .btn-login:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .error-msg {
-            color: #e74c3c;
+            color: var(--accent-red);
             font-size: 0.85rem;
-            margin-top: 10px;
+            margin-top: 15px;
+            font-weight: 600;
             display: none;
         }
 
-        .loading {
+        .loader-box {
             display: none;
-            margin-top: 10px;
-            color: #7f8c8d;
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="login-container">
+    <div class="login-card">
         <img src="assets/backgroud.png" alt="Logo" class="logo">
-        <h2>Bem-vindo</h2>
+        <h2 class="login-title">Bem-vindo</h2>
+        <p class="login-subtitle">Acesse sua conta para continuar</p>
 
-        <div class="input-group">
-            <label for="user">Usuário</label>
-            <input type="text" id="user" placeholder="Ex: joao.silva"
+        <div class="input-group-custom">
+            <span class="input-label">Usuário</span>
+            <input type="text" id="user" class="premium-input" placeholder="Ex: joao.silva"
                 onkeypress="if(event.key === 'Enter') fazerLogin()">
         </div>
 
-        <div class="input-group">
-            <label for="pass">Senha</label>
-            <input type="password" id="pass" placeholder="******" onkeypress="if(event.key === 'Enter') fazerLogin()">
+        <div class="input-group-custom">
+            <span class="input-label">Senha</span>
+            <input type="password" id="pass" class="premium-input" placeholder="••••••••"
+                onkeypress="if(event.key === 'Enter') fazerLogin()">
         </div>
 
-        <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+        <button class="btn-premium" onclick="fazerLogin()">
+            <span>Entrar no App</span>
+            <i class="fas fa-arrow-right" style="font-size: 0.9rem;"></i>
+        </button>
 
-        <div id="loader" class="loading"><i class="fas fa-spinner fa-spin"></i> Verificando...</div>
-        <div id="errorMsg" class="error-msg">Usuário ou senha incorretos.</div>
+        <div id="loader" class="loader-box">
+            <i class="fas fa-circle-notch fa-spin me-2"></i> Validando acesso...
+        </div>
+        <div id="errorMsg" class="error-msg">Usuário ou senha inválidos.</div>
     </div>
 
     <script>
         const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
 
-        // Se já estiver logado, redireciona
         if (localStorage.getItem('user_token')) {
             window.location.href = 'index.html';
         }
@@ -143,7 +127,7 @@
         async function fazerLogin() {
             const userField = document.getElementById('user');
             const passField = document.getElementById('pass');
-            const btn = document.querySelector('.btn-login');
+            const btn = document.querySelector('.btn-premium');
             const errorMsg = document.getElementById('errorMsg');
             const loader = document.getElementById('loader');
 
@@ -155,18 +139,15 @@
                 return;
             }
 
-            // Feedback visual
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+            btn.style.opacity = '0.7';
             loader.style.display = 'block';
             errorMsg.style.display = 'none';
 
             try {
-                // Busca especificamente na aba "Acesso"
                 const response = await fetch(SCRIPT_URL + "?sheet=Acesso");
                 const json = await response.json();
 
-                // Procura o usuário comparando com a coluna 'user' da planilha
                 const usuarioValido = json.data.find(c => {
                     const loginPlanilha = (c.User || "").trim().toLowerCase();
                     const senhaPlanilha = (c.Senha || "").toString().trim();
@@ -174,26 +155,21 @@
                 });
 
                 if (usuarioValido) {
-                    // Mapeia o Perfil para Role
                     usuarioValido.Role = usuarioValido.Perfil || "User";
-
-                    // Salva a sessão no navegador com todos os dados (incluindo o Nome Real)
                     localStorage.setItem('user_token', JSON.stringify(usuarioValido));
-                    localStorage.setItem('last_user_name', usuarioValido.Nome); // Salva o nome real para o index
-
+                    localStorage.setItem('last_user_name', usuarioValido.Nome);
                     window.location.href = 'index.html';
                 } else {
-                    errorMsg.innerText = "Usuário ou senha não conferem.";
                     errorMsg.style.display = 'block';
                     btn.disabled = false;
-                    btn.innerHTML = 'Entrar';
+                    btn.style.opacity = '1';
                     loader.style.display = 'none';
                 }
             } catch (e) {
                 console.error(e);
-                alert("Erro de conexão com o servidor.");
+                alert("Erro de conexão. Verifique sua internet.");
                 btn.disabled = false;
-                btn.innerHTML = 'Entrar';
+                btn.style.opacity = '1';
                 loader.style.display = 'none';
             }
         }

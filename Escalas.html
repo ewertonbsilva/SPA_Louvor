@@ -10,7 +10,12 @@
   <script src="sync.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+  <link rel="stylesheet" href="assets/css/main.css">
   <style>
+    body {
+      padding-top: 80px;
+    }
+
     :root {
       --primary: #2c3e50;
       --accent: #3498db;
@@ -90,18 +95,20 @@
     }
 
     .header-bar {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 0px;
-      padding: 10px 15px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      width: 100%;
-      box-sizing: border-box;
-      position: sticky;
+      padding: 0 20px;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 1000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .header-title {
@@ -144,12 +151,13 @@
     }
 
     .accordion-item {
-      background: #fff;
+      background: white;
       margin-bottom: 15px;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
-      border-left: 6px solid var(--accent);
+      border: 1px solid rgba(0, 0, 0, 0.02);
+      border-left: 6px solid var(--primary);
     }
 
     .accordion-header {
@@ -162,12 +170,14 @@
 
     .header-info h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      /* Increased */
       color: var(--primary);
     }
 
     .header-info span {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
+      /* Increased */
       color: #7f8c8d;
     }
 
@@ -414,155 +424,161 @@
     </button>
   </div>
 
-  <div class="container" style="padding: 20px 15px;">
-    <input type="text" id="searchInput" placeholder="Pesquisar..." onkeyup="filterEscala()"
-      style="width: 100%; padding: 10px 15px; border: 2px solid #ddd; border-radius: 30px; outline: none; box-sizing: border-box;">
+  <div class="search-container"
+    style="padding: 15px; background: var(--glass); backdrop-filter: blur(8px); border-bottom: 1px solid #f1f5f9; position: fixed; top: 70px; left:0; right:0; z-index: 999;">
+    <div style="max-width: 500px; margin: 0 auto;">
+      <input type="text" id="searchInput" placeholder="Pesquisar..." onkeyup="filterEscala()" class="premium-input"
+        style="margin-bottom: 0; box-shadow: var(--shadow-sm);">
+    </div>
   </div>
 
-  <div id="loader" class="loading" style="display:none"><i class="fas fa-sync fa-spin"></i> Carregando Escalas...</div>
-  <div id="escala-container" class="container"></div>
+  <div class="premium-container" style="max-width: 1000px; padding-top: 170px;">
 
-  <script>
-    const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
-    const urlEscala = SCRIPT_URL + "?sheet=Transformar";
-    const urlRepertorio = SCRIPT_URL + "?sheet=Repertório";
-    const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
+    <div id="loader" class="loading" style="display:none"><i class="fas fa-sync fa-spin"></i> Carregando Escalas...
+    </div>
+    <div id="escala-container" class="container"></div>
 
-    const iconsMap = {
-      "Ministro": "fa-microphone-lines",
-      "Back": "fa-microphone",
-      "Violão": "fa-guitar",
-      "Guitarra": "fa-guitar",
-      "Teclado": "fa-keyboard",
-      "Bateria": "fa-drum",
-      "Baixo": "fa-guitar"
-    };
-    async function loadAll(forceUpdate = false) {
-      const loader = document.getElementById('loader');
-      const cachedEscala = localStorage.getItem('offline_escala');
-      const cachedRepertorio = localStorage.getItem('offline_repertorio');
-      const cachedLembretes = localStorage.getItem('offline_lembretes');
+    <script>
+      const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
+      const urlEscala = SCRIPT_URL + "?sheet=Transformar";
+      const urlRepertorio = SCRIPT_URL + "?sheet=Repertório";
+      const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
 
-      if (!forceUpdate && cachedEscala && cachedRepertorio && cachedLembretes) {
-        renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes));
-        setTimeout(() => silentSync(), 500);
-        return;
-      }
+      const iconsMap = {
+        "Ministro": "fa-microphone-lines",
+        "Back": "fa-microphone",
+        "Violão": "fa-guitar",
+        "Guitarra": "fa-guitar",
+        "Teclado": "fa-keyboard",
+        "Bateria": "fa-drum",
+        "Baixo": "fa-guitar"
+      };
+      async function loadAll(forceUpdate = false) {
+        const loader = document.getElementById('loader');
+        const cachedEscala = localStorage.getItem('offline_escala');
+        const cachedRepertorio = localStorage.getItem('offline_repertorio');
+        const cachedLembretes = localStorage.getItem('offline_lembretes');
 
-      loader.style.display = 'block';
-      loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando dados...';
+        if (!forceUpdate && cachedEscala && cachedRepertorio && cachedLembretes) {
+          renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes));
+          setTimeout(() => silentSync(), 500);
+          return;
+        }
 
-      try {
-        const [resEscala, resRepertorio, resLembretes] = await Promise.all([
-          fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
-        ]);
-        const escalaJson = await resEscala.json();
-        const repertorioJson = await resRepertorio.json();
-        const lembretesJson = await resLembretes.json();
+        loader.style.display = 'block';
+        loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando dados...';
 
-        localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
-        localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
-        localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
+        try {
+          const [resEscala, resRepertorio, resLembretes] = await Promise.all([
+            fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
+          ]);
+          const escalaJson = await resEscala.json();
+          const repertorioJson = await resRepertorio.json();
+          const lembretesJson = await resLembretes.json();
 
-        loader.style.display = 'none';
-        renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
-        if (forceUpdate) alert("Escalas atualizadas!");
-      } catch (e) {
-        if (cachedEscala && cachedRepertorio) renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes || '[]'));
-        else loader.innerText = "Erro ao carregar dados.";
-      }
-    }
+          localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
+          localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
+          localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
 
-    async function silentSync() {
-      try {
-        const [resEscala, resRepertorio, resLembretes] = await Promise.all([
-          fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
-        ]);
-        const escalaJson = await resEscala.json();
-        const repertorioJson = await resRepertorio.json();
-        const lembretesJson = await resLembretes.json();
-
-        localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
-        localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
-        localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
-
-        // Só renderiza se não houver busca ativa E nenhum accordion aberto
-        const hasActiveItems = document.querySelector('.accordion-item.active') !== null;
-        if (document.getElementById('searchInput').value === "" && !hasActiveItems) {
+          loader.style.display = 'none';
           renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
+          if (forceUpdate) alert("Escalas atualizadas!");
+        } catch (e) {
+          if (cachedEscala && cachedRepertorio) renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes || '[]'));
+          else loader.innerText = "Erro ao carregar dados.";
         }
-      } catch (e) { console.log("Silent sync failed"); }
-    }
-
-    function renderMaster(escalas, musicas, lembretes = []) {
-      const container = document.getElementById('escala-container');
-      container.innerHTML = '';
-      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-
-      const escalaAgrupada = escalas.reduce((acc, item) => {
-        const dataItem = new Date(item.Data);
-        if (dataItem >= hoje) {
-          const key = item.Cultos;
-          if (!acc[key]) acc[key] = { info: item, membros: [] };
-          acc[key].membros.push({ nome: item.Nome, funcao: item["Função"] });
-        }
-        return acc;
-      }, {});
-
-      const repertorioAgrupado = musicas.reduce((acc, item) => {
-        const key = item["Culto+Data"];
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      }, {});
-
-      const escalasFiltradas = Object.values(escalaAgrupada).sort((a, b) => new Date(a.info.Data) - new Date(b.info.Data));
-
-      if (escalasFiltradas.length === 0) {
-        container.innerHTML = '<div class="loading">Não há cultos agendados.</div>';
-        return;
       }
 
-      escalasFiltradas.forEach(item => {
-        const key = item.info.Cultos;
-        const dataObj = new Date(item.info.Data);
-        // Remove a vírgula do formato: ex "dom. 18/01"
-        const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(',', '');
-        const dataAvisoCheck = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        const dataFullFormatada = dataObj.toLocaleDateString('pt-BR');
-        const musicasDoCulto = repertorioAgrupado[key] || [];
+      async function silentSync() {
+        try {
+          const [resEscala, resRepertorio, resLembretes] = await Promise.all([
+            fetch(urlEscala), fetch(urlRepertorio), fetch(urlLembretes)
+          ]);
+          const escalaJson = await resEscala.json();
+          const repertorioJson = await resRepertorio.json();
+          const lembretesJson = await resLembretes.json();
 
-        // Filtrar lembretes deste culto específico (Aproximado por dd/mm + Nome do Culto)
-        const avisosDoCulto = lembretes.filter(l => {
-          const matchData = l.Culto && l.Culto.includes(dataAvisoCheck);
-          const matchNome = l.Culto && l.Culto.toLowerCase().includes(item.info["Nome dos Cultos"].toLowerCase().trim());
-          return matchData && matchNome;
-        });
+          localStorage.setItem('offline_escala', JSON.stringify(escalaJson.data));
+          localStorage.setItem('offline_repertorio', JSON.stringify(repertorioJson.data));
+          localStorage.setItem('offline_lembretes', JSON.stringify(lembretesJson.data));
 
-        // Verifica se o usuário logado está escoladado neste culto
-        const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
-        const meuNomeLogado = (userToken.Nome || "").toLowerCase().trim();
-        const isAdmin = userToken.Role === "Admin" || userToken.Role === "SuperAdmin";
+          // Só renderiza se não houver busca ativa E nenhum accordion aberto
+          const hasActiveItems = document.querySelector('.accordion-item.active') !== null;
+          if (document.getElementById('searchInput').value === "" && !hasActiveItems) {
+            renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
+          }
+        } catch (e) { console.log("Silent sync failed"); }
+      }
 
-        // Helper para normalizar nomes
-        const normalize = str => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        const nomeNormalizado = normalize(meuNomeLogado);
+      function renderMaster(escalas, musicas, lembretes = []) {
+        const container = document.getElementById('escala-container');
+        container.innerHTML = '';
+        const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
-        const estouEscalado = (nomeNormalizado && item.membros.some(m => {
-          const mNome = normalize(m.nome);
-          return mNome.includes(nomeNormalizado) || nomeNormalizado.includes(mNome);
-        }));
+        const escalaAgrupada = escalas.reduce((acc, item) => {
+          const dataItem = new Date(item.Data);
+          if (dataItem >= hoje) {
+            const key = item.Cultos;
+            if (!acc[key]) acc[key] = { info: item, membros: [] };
+            acc[key].membros.push({ nome: item.Nome, funcao: item["Função"] });
+          }
+          return acc;
+        }, {});
 
-        const itemEl = document.createElement('div');
-        itemEl.className = 'accordion-item';
-        itemEl.setAttribute('data-search', (item.info["Nome dos Cultos"] + " " + item.membros.map(m => m.nome).join(" ")).toLowerCase());
+        const repertorioAgrupado = musicas.reduce((acc, item) => {
+          const key = item["Culto+Data"];
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(item);
+          return acc;
+        }, {});
 
-        // Armazena as músicas para a função Bulk
-        itemEl.dataset.musicas = JSON.stringify(musicasDoCulto.map(m => ({
-          musica: m.Músicas, cantor: m.Cantor, tom: m.Tons
-        })));
+        const escalasFiltradas = Object.values(escalaAgrupada).sort((a, b) => new Date(a.info.Data) - new Date(b.info.Data));
 
-        itemEl.innerHTML = `
+        if (escalasFiltradas.length === 0) {
+          container.innerHTML = '<div class="loading">Não há cultos agendados.</div>';
+          return;
+        }
+
+        escalasFiltradas.forEach(item => {
+          const key = item.info.Cultos;
+          const dataObj = new Date(item.info.Data);
+          // Remove a vírgula do formato: ex "dom. 18/01"
+          const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(',', '');
+          const dataAvisoCheck = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+          const dataFullFormatada = dataObj.toLocaleDateString('pt-BR');
+          const musicasDoCulto = repertorioAgrupado[key] || [];
+
+          // Filtrar lembretes deste culto específico (Aproximado por dd/mm + Nome do Culto)
+          const avisosDoCulto = lembretes.filter(l => {
+            const matchData = l.Culto && l.Culto.includes(dataAvisoCheck);
+            const matchNome = l.Culto && l.Culto.toLowerCase().includes(item.info["Nome dos Cultos"].toLowerCase().trim());
+            return matchData && matchNome;
+          });
+
+          // Verifica se o usuário logado está escoladado neste culto
+          const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+          const meuNomeLogado = (userToken.Nome || "").toLowerCase().trim();
+          const isAdmin = userToken.Role === "Admin" || userToken.Role === "SuperAdmin";
+
+          // Helper para normalizar nomes
+          const normalize = str => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          const nomeNormalizado = normalize(meuNomeLogado);
+
+          const estouEscalado = (nomeNormalizado && item.membros.some(m => {
+            const mNome = normalize(m.nome);
+            return mNome.includes(nomeNormalizado) || nomeNormalizado.includes(mNome);
+          }));
+
+          const itemEl = document.createElement('div');
+          itemEl.className = 'accordion-item';
+          itemEl.setAttribute('data-search', (item.info["Nome dos Cultos"] + " " + item.membros.map(m => m.nome).join(" ")).toLowerCase());
+
+          // Armazena as músicas para a função Bulk
+          itemEl.dataset.musicas = JSON.stringify(musicasDoCulto.map(m => ({
+            musica: m.Músicas, cantor: m.Cantor, tom: m.Tons
+          })));
+
+          itemEl.innerHTML = `
         <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
           <div class="header-info">
             <h3>${item.info["Nome dos Cultos"]}</h3>
@@ -582,10 +598,10 @@
                 ` : ''}
               </div>
         ${item.membros.map(m => {
-          const categoria = m.funcao.split(' ')[0]; // Pega "Violão", "Guitarra", etc.
-          const iconeBase = iconsMap[categoria] || 'fa-star';
+            const categoria = m.funcao.split(' ')[0]; // Pega "Violão", "Guitarra", etc.
+            const iconeBase = iconsMap[categoria] || 'fa-star';
 
-          return `
+            return `
           <div class="member-item">
             <i class="fa-solid ${iconeBase} ${categoria}"></i>
             <div class="member-info">
@@ -593,7 +609,7 @@
                 <span class="m-funcao">${m.funcao}</span>
             </div>
             </div>`;
-        }).join('')}
+          }).join('')}
 
               ${avisosDoCulto.length > 0 ? `
                 <div class="extra-section" style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px;">
@@ -630,9 +646,9 @@
                    ` : ''}
                 ` : ''}
                 ${musicasDoCulto.length > 0 ? musicasDoCulto.map(m => {
-          const queryBusca = encodeURIComponent(`${m.Músicas}`);
-          const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
-          return `
+            const queryBusca = encodeURIComponent(`${m.Músicas}`);
+            const querySpotify = encodeURIComponent(`${m.Músicas} ${m.Cantor || ''}`);
+            return `
                   <div class="musica-item">
                     <span class="m-nome-musica">${m.Músicas}</span>
                     <span class="m-cantor">
@@ -651,154 +667,154 @@
                       <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>`;
-        }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
+          }).join('') : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
               </div>
             </div>
           </div>
         </div>
       `;
-        container.appendChild(itemEl);
-      });
-    }
-
-    // --- FUNÇÕES DE HISTÓRICO BULK ---
-    function processarBulk(btn, event) {
-      event.stopPropagation(); // Evita que o accordion feche ao clicar no botão
-      const item = btn.closest('.accordion-item');
-      const musicas = item.dataset.musicas;
-      addBulkHistorico(btn, musicas);
-    }
-
-    async function addBulkHistorico(btn, jsonStr) {
-      if (!confirm("Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)")) return;
-
-      const lista = JSON.parse(jsonStr);
-      const originalContent = btn.innerHTML;
-
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-      btn.disabled = true;
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: "addHistory", data: lista })
+          container.appendChild(itemEl);
         });
-        const dados = await res.json();
-        alert(dados.message);
-        btn.innerHTML = '<i class="fas fa-check"></i> Concluído';
-        btn.style.background = "#2c3e50";
-      } catch (e) {
-        alert("Erro na conexão.");
-        btn.innerHTML = originalContent;
-        btn.disabled = false;
       }
-    }
 
-    async function comunicarAusencia(dataCulto, nomeCulto, event) {
-      event.stopPropagation();
-      const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
-      const meuNome = userToken.Nome || "Membro";
+      // --- FUNÇÕES DE HISTÓRICO BULK ---
+      function processarBulk(btn, event) {
+        event.stopPropagation(); // Evita que o accordion feche ao clicar no botão
+        const item = btn.closest('.accordion-item');
+        const musicas = item.dataset.musicas;
+        addBulkHistorico(btn, musicas);
+      }
 
-      const info = prompt(`Olá ${meuNome}, qual aviso você deseja comunicar para o culto do dia ${dataCulto} (${nomeCulto}):`);
+      async function addBulkHistorico(btn, jsonStr) {
+        if (!confirm("Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)")) return;
 
-      if (!info || info.trim() === "") return;
+        const lista = JSON.parse(jsonStr);
+        const originalContent = btn.innerHTML;
 
-      const id_Lembrete = Math.random().toString(16).slice(2, 10);
-      const payload = {
-        sheet: "Lembretes",
-        id_Lembrete,
-        Componente: meuNome,
-        Data: new Date().toLocaleDateString('pt-BR'),
-        Culto: `${nomeCulto} (${dataCulto})`,
-        Info: info
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "addHistory", data: lista })
+          });
+          const dados = await res.json();
+          alert(dados.message);
+          btn.innerHTML = '<i class="fas fa-check"></i> Concluído';
+          btn.style.background = "#2c3e50";
+        } catch (e) {
+          alert("Erro na conexão.");
+          btn.innerHTML = originalContent;
+          btn.disabled = false;
+        }
+      }
+
+      async function comunicarAusencia(dataCulto, nomeCulto, event) {
+        event.stopPropagation();
+        const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+        const meuNome = userToken.Nome || "Membro";
+
+        const info = prompt(`Olá ${meuNome}, qual aviso você deseja comunicar para o culto do dia ${dataCulto} (${nomeCulto}):`);
+
+        if (!info || info.trim() === "") return;
+
+        const id_Lembrete = Math.random().toString(16).slice(2, 10);
+        const payload = {
+          sheet: "Lembretes",
+          id_Lembrete,
+          Componente: meuNome,
+          Data: new Date().toLocaleDateString('pt-BR'),
+          Culto: `${nomeCulto} (${dataCulto})`,
+          Info: info
+        };
+
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const res = await response.json();
+          if (res.status === "success") {
+            alert("✅ Aviso enviado com sucesso! Os Componentes serão notificados.");
+          } else {
+            alert("⚠️ Erro ao enviar: " + res.message);
+          }
+        } catch (e) {
+          // Fallback para persistência offline via SyncManager se disponível
+          if (window.SyncManager) {
+            SyncManager.addToQueue(payload);
+            alert("☁️ Você está offline. O aviso será enviado assim que houver conexão.");
+          } else {
+            alert("❌ Erro de conexão. Tente novamente mais tarde.");
+          }
+        }
+      }
+
+      async function excluirAviso(id_Aviso, event) {
+        if (event) event.stopPropagation();
+        if (!confirm("Deseja remover este aviso?")) return;
+
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+              action: "delete",
+              sheet: "Lembretes",
+              id_Lembrete: id_Aviso
+            })
+          });
+          const res = await response.json();
+          if (res.status === "success") {
+            alert("✅ Aviso removido!");
+            loadAll(true);
+          } else {
+            alert("⚠️ Erro ao remover: " + res.message);
+          }
+        } catch (e) {
+          alert("❌ Erro de conexão.");
+        }
+      }
+
+      async function excluirMusica(musica, cultoData, cantor) {
+        if (!confirm(`Deseja remover "${musica}"?`)) return;
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "delete", sheet: "Repertório", musica: musica, culto: cultoData, cantor: cantor })
+          });
+          const res = await response.json();
+          if (res.status === "success") { alert("Removido!"); loadAll(true); }
+        } catch (e) { setTimeout(() => loadAll(true), 1500); }
+      }
+
+      function filterEscala() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.accordion-item').forEach(item => {
+          item.classList.toggle('hidden', !item.getAttribute('data-search').includes(q));
+        });
+      }
+
+      function navigateToAddRepertorio(culto) {
+        const searchVal = document.getElementById('searchInput').value;
+        let url = `Cadastro de Repertorio.html?culto=${encodeURIComponent(culto)}`;
+        const sourceUrl = `Escalas.html?search=${encodeURIComponent(searchVal)}`;
+        url += `&source=${encodeURIComponent(sourceUrl)}`;
+        window.location.href = url;
+      }
+
+      window.onload = async () => {
+        await loadAll();
+
+        // Auto-restore filter from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const search = urlParams.get('search');
+        if (search) {
+          document.getElementById('searchInput').value = search;
+          filterEscala();
+        }
       };
-
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        const res = await response.json();
-        if (res.status === "success") {
-          alert("✅ Aviso enviado com sucesso! Os Componentes serão notificados.");
-        } else {
-          alert("⚠️ Erro ao enviar: " + res.message);
-        }
-      } catch (e) {
-        // Fallback para persistência offline via SyncManager se disponível
-        if (window.SyncManager) {
-          SyncManager.addToQueue(payload);
-          alert("☁️ Você está offline. O aviso será enviado assim que houver conexão.");
-        } else {
-          alert("❌ Erro de conexão. Tente novamente mais tarde.");
-        }
-      }
-    }
-
-    async function excluirAviso(id_Aviso, event) {
-      if (event) event.stopPropagation();
-      if (!confirm("Deseja remover este aviso?")) return;
-
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: "delete",
-            sheet: "Lembretes",
-            id_Lembrete: id_Aviso
-          })
-        });
-        const res = await response.json();
-        if (res.status === "success") {
-          alert("✅ Aviso removido!");
-          loadAll(true);
-        } else {
-          alert("⚠️ Erro ao remover: " + res.message);
-        }
-      } catch (e) {
-        alert("❌ Erro de conexão.");
-      }
-    }
-
-    async function excluirMusica(musica, cultoData, cantor) {
-      if (!confirm(`Deseja remover "${musica}"?`)) return;
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: "delete", sheet: "Repertório", musica: musica, culto: cultoData, cantor: cantor })
-        });
-        const res = await response.json();
-        if (res.status === "success") { alert("Removido!"); loadAll(true); }
-      } catch (e) { setTimeout(() => loadAll(true), 1500); }
-    }
-
-    function filterEscala() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
-      document.querySelectorAll('.accordion-item').forEach(item => {
-        item.classList.toggle('hidden', !item.getAttribute('data-search').includes(q));
-      });
-    }
-
-    function navigateToAddRepertorio(culto) {
-      const searchVal = document.getElementById('searchInput').value;
-      let url = `Cadastro de Repertorio.html?culto=${encodeURIComponent(culto)}`;
-      const sourceUrl = `Escalas.html?search=${encodeURIComponent(searchVal)}`;
-      url += `&source=${encodeURIComponent(sourceUrl)}`;
-      window.location.href = url;
-    }
-
-    window.onload = async () => {
-      await loadAll();
-
-      // Auto-restore filter from URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const search = urlParams.get('search');
-      if (search) {
-        document.getElementById('searchInput').value = search;
-        filterEscala();
-      }
-    };
-  </script>
+    </script>
 
   </div>
   </div>

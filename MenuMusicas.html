@@ -10,8 +10,13 @@
     <script src="permissions.js"></script>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+    <link rel="stylesheet" href="assets/css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body {
+            padding-top: 80px;
+        }
+
         :root {
             --primary: #2c3e50;
             --accent: #3498db;
@@ -36,18 +41,20 @@
         }
 
         .header-bar {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 25px;
-            padding: 10px 15px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-            width: 100%;
-            box-sizing: border-box;
-            position: sticky;
+            padding: 0 20px;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .header-title {
@@ -224,51 +231,55 @@
         </button>
     </div>
 
-    <div class="container" style="padding: 20px;">
+    <div class="premium-container">
 
         <!-- ANALYTICS SECUNDÁRIOS -->
-        <div class="analytics-row">
-            <div class="chart-card-small">
-                <div class="stat-lbl" style="margin-bottom:10px; font-weight:bold; text-align:center;">Gráfico de
-                    Estilos</div>
-                <div class="chart-wrapper" style="height: 180px;">
-                    <canvas id="chartEstilos"></canvas>
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="premium-card" style="padding: 15px;">
+                    <div class="stat-lbl"
+                        style="margin-bottom:10px; font-weight:bold; text-align:center; font-size: 0.75rem;">Estilos
+                    </div>
+                    <div class="chart-wrapper" style="height: 150px;">
+                        <canvas id="chartEstilos"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="chart-card-small">
-                <div class="stat-lbl" style="margin-bottom:10px; font-weight:bold; text-align:center;">Gráfico de
-                    Temas
-                </div>
-                <div class="chart-wrapper" style="height: 180px;">
-                    <canvas id="chartTemas"></canvas>
+            <div class="col-6">
+                <div class="premium-card" style="padding: 15px;">
+                    <div class="stat-lbl"
+                        style="margin-bottom:10px; font-weight:bold; text-align:center; font-size: 0.75rem;">Temas</div>
+                    <div class="chart-wrapper" style="height: 150px;">
+                        <canvas id="chartTemas"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- SUBMENUS -->
-        <div class="menu-grid" style="margin-bottom: 25px;">
-            <a href="Musicas.html" class="menu-item">
+        <div class="premium-menu-grid mb-5">
+            <a href="Musicas.html" class="menu-card">
                 <i class="fas fa-list-ul"></i>
-                <span>Lista de Músicas</span>
+                <span>Lista</span>
             </a>
-            <a href="Repertorio.html" class="menu-item">
+            <a href="Repertorio.html" class="menu-card">
                 <i class="fas fa-book-open"></i>
                 <span>Repertórios</span>
             </a>
-            <a href="Cadastro de Repertorio.html" class="menu-item" id="menuMontarRepertorio">
-                <i class="fas fa-plus-circle" style="color: #27ae60;"></i>
-                <span>Montar Repertório</span>
+            <a href="Cadastro de Repertorio.html" class="menu-card" id="menuMontarRepertorio">
+                <i class="fas fa-plus-circle" style="color: var(--accent-green);"></i>
+                <span>Montar</span>
             </a>
-            <a href="Historico de Musicas.html" class="menu-item">
-                <i class="fas fa-history" style="color: #9b59b6;"></i>
+            <a href="Historico de Musicas.html" class="menu-card">
+                <i class="fas fa-history" style="color: var(--accent-gold);"></i>
                 <span>Histórico</span>
             </a>
         </div>
 
         <!-- GRÁFICO MAIS TOCADAS -->
-        <div class="chart-card">
-            <h3 style="margin-bottom: 15px;">Mais Tocadas (Repertório)</h3>
-            <div id="loader"><i class="fas fa-sync fa-spin"></i></div>
+        <div class="premium-card">
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem; text-align: center;">Mais Tocadas</h3>
+            <div id="loader" style="text-align: center;"><i class="fas fa-sync fa-spin"></i></div>
             <div class="chart-wrapper" style="height: 300px;">
                 <canvas id="chartMusicas"></canvas>
             </div>

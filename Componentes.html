@@ -9,7 +9,12 @@
   <script src="config.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+  <link rel="stylesheet" href="assets/css/main.css">
   <style>
+    body {
+      padding-top: 80px;
+    }
+
     :root {
       --primary: #2c3e50;
       --accent: #27ae60;
@@ -33,18 +38,20 @@
     }
 
     .header-bar {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 25px;
-      padding: 10px 15px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      width: 100%;
-      box-sizing: border-box;
-      position: sticky;
+      padding: 0 20px;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 1000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .header-title {
@@ -115,17 +122,18 @@
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 25px;
     }
 
     .kpi-card {
-      background: var(--glass);
-      border-radius: 18px;
-      padding: 12px 5px;
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 15px 5px;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(0, 0, 0, 0.02);
+      transition: all 0.2s;
     }
 
     .kpi-value {
@@ -455,16 +463,14 @@
   <button class="nav-btn" onclick="window.location.href='index.html'" title="Voltar">
     <i class="fas fa-arrow-left"></i>
   </button>
-  <div class="header-title">
-    <h2><i class="fas fa-users"></i> Equipe</h2>
-  </div>
+  <h2 class="header-title">Equipe</h2>
   <button class="nav-btn btn-update" onclick="iniciar(true)" title="Atualizar Dados">
     <i class="fas fa-sync-alt"></i>
   </button>
 </div>
 
-<div class="container" style="padding: 20px 15px;">
-  <div id="graficoGenero" class="glass-card">
+<div class="premium-container">
+  <div id="graficoGenero" class="premium-card">
     <!-- MASCULINO -->
     <div class="gender-bar-container" onclick="filtrarPorGenero('MASC', this)"
       style="cursor:pointer; margin-bottom:15px; transition:0.2s">
@@ -760,12 +766,12 @@
       const urlFoto = fotoObj ? fotoObj.url : "https://via.placeholder.com/150";
 
       return `
-      <div class="comp-card" onclick="abrirDetalhes('${nomeLimpo}', '${urlFoto}', '${item.Função}', '${item["Tel sem Espaço"]}', '${item.Whatsapp?.link || '#'}')">
+      <div class="premium-card text-center" style="padding: 20px 10px; cursor: pointer;" onclick="abrirDetalhes('${nomeLimpo}', '${urlFoto}', '${item.Função}', '${item["Tel sem Espaço"]}', '${item.Whatsapp?.link || '#'}')">
         <div class="avatar-wrapper">
-          <img src="${urlFoto}" class="avatar" onclick="abrirFotoExpandida('${urlFoto}', event)" title="Clique para ampliar">
+          <img src="${urlFoto}" class="avatar" onclick="abrirFotoExpandida('${urlFoto}', event)" title="Clique para ampliar" style="width: 70px; height: 70px; border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
         </div>
-        <div class="comp-name">${nomeLimpo}</div>
-        <div class="comp-role">${item.Função}</div>
+        <div class="comp-name font-heading" style="font-size: 0.95rem; margin-top: 5px;">${nomeLimpo}</div>
+        <div class="comp-role" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">${item.Função}</div>
       </div>
     `;
     }).join('');

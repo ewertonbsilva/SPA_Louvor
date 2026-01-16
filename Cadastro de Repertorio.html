@@ -12,6 +12,7 @@
   <script src="permissions.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+  <link rel="stylesheet" href="assets/css/main.css">
   <script>
     const userTokens = JSON.parse(localStorage.getItem('user_token') || '{}');
     if (userTokens.Role) {
@@ -23,41 +24,11 @@
   </script>
 
   <style>
-    :root {
-      --primary: #2c3e50;
-      --accent: #27ae60;
-      --bg: #f4f7f6;
-    }
-
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      margin: 0;
-      padding: 0;
+      padding-top: 80px;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 600px;
-      border-top: 8px solid var(--accent);
-    }
-
-    h2 {
-      text-align: center;
-      color: var(--primary);
-      margin-bottom: 25px;
-    }
-
+    /* Preserve original specific behavior while using main.css */
     .field {
       margin-bottom: 20px;
     }
@@ -65,334 +36,246 @@
     label {
       display: block;
       margin-bottom: 8px;
-      font-weight: bold;
+      font-weight: 700;
       color: var(--primary);
       font-size: 0.9rem;
     }
 
     .ts-control {
-      padding: 10px !important;
-      border-radius: 8px !important;
-      border: 2px solid #ddd !important;
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #219150;
-    }
-
-    #status {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-      display: none;
-      font-weight: bold;
-    }
-
-    .success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0px;
-      padding: 10px 15px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      width: 100%;
-      box-sizing: border-box;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .header-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin: 0;
-      flex-grow: 1;
-      text-align: center;
-    }
-
-    .nav-btn {
-      background: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      cursor: pointer;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    @media (max-width: 600px) {
-      .card {
-        padding: 15px;
-      }
-
-      .container {
-        padding: 10px;
-      }
-    }
+      padding: 12px !important;
+      border-radius: var(--radius-md) !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #f8fafc !important;
     }
   </style>
 </head>
 
-<div class="header-bar">
-  <button class="nav-btn" onclick="handleBack()" title="Voltar">
-    <i class="fas fa-arrow-left"></i>
-  </button>
-  <h2 class="header-title">Montar Repertório</h2>
-  <div style="width: 40px"></div>
-</div>
-
-<div class="container">
-  <div class="card" style="border-top: none;">
-
-    <form id="repertorioForm">
-      <input type="hidden" name="sheet" value="Repertório">
-      <input type="hidden" name="DataRaw" id="hiddenData">
-      <input type="hidden" name="NomeCulto" id="hiddenNomeCulto">
-
-      <div class="field">
-        <label>Escolha o Culto</label>
-        <select id="cultoSelect" name="Cultos" placeholder="Pesquisar culto..." required></select>
-      </div>
-
-      <div class="field">
-        <label>Ministro da Música (Escalados)</label>
-        <select id="ministroSelect" name="Ministro" placeholder="Selecione primeiro o culto..." required></select>
-      </div>
-
-      <div class="field">
-        <label>Música - Cantor</label>
-        <select id="musicaSelect" name="MusicaFull" placeholder="Pesquisar música..." required></select>
-        <div style="text-align:right; margin-top:5px; font-size:0.85rem">
-          <a id="linkAddMusica" href="Cadastro de Musicas.html" style="color:var(--accent); text-decoration:none;"><i
-              class="fas fa-plus"></i> Não encontrou? Adicionar Nova Música</a>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Tom / Tonalidade (Opcional)</label>
-        <select id="tomSelect" name="Tom" placeholder="Pesquisar tom...">
-          <option value="">Selecione...</option>
-          <option value="C / Am">C / Am</option>
-          <option value="C# / A#m">C# / A#m</option>
-          <option value="D / Bm">D / Bm</option>
-          <option value="D# / Cm">D# / Cm</option>
-          <option value="E / C#m">E / C#m</option>
-          <option value="F / Dm">F / Dm</option>
-          <option value="F# / D#m">F# / D#m</option>
-          <option value="G / Em">G / Em</option>
-          <option value="G# / Fm">G# / Fm</option>
-          <option value="A / F#m">A / F#m</option>
-          <option value="A# / Gm">A# / Gm</option>
-          <option value="B / G#m">B / G#m</option>
-        </select>
-      </div>
-
-      <button type="submit" id="btnSubmit">Salvar no Repertório</button>
-    </form>
-    <div id="status"></div>
+<body>
+  <div class="header-bar">
+    <button class="nav-btn" onclick="handleBack()" title="Voltar">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <h2 class="header-title">Montar Repertório</h2>
+    <div style="width: 40px"></div>
   </div>
 
-  <script src="config.js"></script>
-  <script src="sync.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+  <div class="premium-container">
+    <div class="premium-card" style="max-width: 500px; margin: 0 auto; border-top: 8px solid var(--accent-green);">
 
-  <script>
-    const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
-    let tsCulto, tsMusica, tsTom, tsMinistro;
-    let transformData = [];
+      <form id="repertorioForm">
+        <input type="hidden" name="sheet" value="Repertório">
+        <input type="hidden" name="DataRaw" id="hiddenData">
+        <input type="hidden" name="NomeCulto" id="hiddenNomeCulto">
 
-    function initSelects() {
-      tsCulto = new TomSelect("#cultoSelect", {
-        onChange: (val) => filtrarEscala(val)
+        <div class="field">
+          <label>Escolha o Culto</label>
+          <select id="cultoSelect" name="Cultos" placeholder="Pesquisar culto..." required></select>
+        </div>
+
+        <div class="field">
+          <label>Ministro da Música (Escalados)</label>
+          <select id="ministroSelect" name="Ministro" placeholder="Selecione primeiro o culto..." required></select>
+        </div>
+
+        <div class="field">
+          <label>Música - Cantor</label>
+          <select id="musicaSelect" name="MusicaFull" placeholder="Pesquisar música..." required></select>
+          <div style="text-align:right; margin-top:5px; font-size:0.85rem">
+            <a id="linkAddMusica" href="Cadastro de Musicas.html"
+              style="color:var(--accent-green); text-decoration:none; font-weight:600;"><i class="fas fa-plus"></i> Não
+              encontrou? Adicionar Nova Música</a>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tom / Tonalidade (Opcional)</label>
+          <select id="tomSelect" name="Tom" placeholder="Pesquisar tom...">
+            <option value="">Selecione...</option>
+            <option value="C / Am">C / Am</option>
+            <option value="C# / A#m">C# / A#m</option>
+            <option value="D / Bm">D / Bm</option>
+            <option value="D# / Cm">D# / Cm</option>
+            <option value="E / C#m">E / C#m</option>
+            <option value="F / Dm">F / Dm</option>
+            <option value="F# / D#m">F# / D#m</option>
+            <option value="G / Em">G / Em</option>
+            <option value="G# / Fm">G# / Fm</option>
+            <option value="A / F#m">A / F#m</option>
+            <option value="A# / Gm">A# / Gm</option>
+            <option value="B / G#m">B / G#m</option>
+          </select>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-premium">Salvar no Repertório</button>
+      </form>
+      <div id="status" style="margin-top:20px; text-align:center; display:none;"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="sync.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+    <script>
+      const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
+      let tsCulto, tsMusica, tsTom, tsMinistro;
+      let transformData = [];
+
+      function initSelects() {
+        tsCulto = new TomSelect("#cultoSelect", {
+          onChange: (val) => filtrarEscala(val)
+        });
+        tsMinistro = new TomSelect("#ministroSelect");
+        tsMusica = new TomSelect("#musicaSelect");
+        tsTom = new TomSelect("#tomSelect");
+      }
+
+      async function carregarDados() {
+        try {
+          initSelects();
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+
+          // Carregar do Cache se disponível
+          const cachedEscala = localStorage.getItem('offline_escala');
+          const cachedMusicas = localStorage.getItem('offline_musicas');
+
+          let transformDataTemp = [];
+          let musicasDataTemp = [];
+
+          // LOAD TRANSFORM
+          if (cachedEscala) {
+            transformDataTemp = JSON.parse(cachedEscala);
+          } else {
+            const resT = await fetch(SCRIPT_URL + "?sheet=Transformar");
+            const jsonT = await resT.json();
+            transformDataTemp = jsonT.data;
+            localStorage.setItem('offline_escala', JSON.stringify(transformDataTemp));
+          }
+          transformData = transformDataTemp; // Global var usage
+
+          // Add Cultos
+          const cultosUnicos = [...new Set(transformData.map(i => i.Cultos))];
+          tsCulto.clearOptions();
+          cultosUnicos.forEach(cNome => {
+            const item = transformData.find(i => i.Cultos === cNome);
+            if (new Date(item.Data) >= hoje) {
+              tsCulto.addOption({ value: cNome, text: cNome });
+            }
+          });
+
+          // LOAD MUSICAS
+          if (cachedMusicas) {
+            musicasDataTemp = JSON.parse(cachedMusicas);
+          } else {
+            const resM = await fetch(SCRIPT_URL + "?sheet=Musicas");
+            const jsonM = await resM.json();
+            musicasDataTemp = jsonM.data;
+            localStorage.setItem('offline_musicas', JSON.stringify(musicasDataTemp));
+          }
+
+          musicasDataTemp.forEach(m => {
+            if (m.MusicaCorigida) {
+              let txt = m.MusicaCorigida + " - " + m["Cantor Corrigido"];
+              tsMusica.addOption({ value: txt, text: txt });
+            }
+          });
+
+          // AUTO-SELECT CULTO FROM URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const autoCulto = urlParams.get('culto');
+          if (autoCulto) {
+            tsCulto.setValue(autoCulto);
+          }
+
+        } catch (e) { console.error(e); }
+      }
+
+      // Função que filtra os Ministros baseada no Culto selecionado
+      function filtrarEscala(cultoNome) {
+        tsMinistro.clear();
+        tsMinistro.clearOptions();
+
+        // Atualiza link de Adicionar Música para manter o estado
+        const link = document.getElementById('linkAddMusica');
+        if (link) {
+          // Pega query params atuais
+          const urlParams = new URLSearchParams(window.location.search);
+          const source = urlParams.get('source');
+
+          if (source) {
+            const currentUrl = `Cadastro de Repertorio.html?culto=${encodeURIComponent(cultoNome || '')}&source=${encodeURIComponent(source)}`;
+            link.href = `Cadastro de Musicas.html?culto=${encodeURIComponent(cultoNome || '')}&source=${encodeURIComponent(currentUrl)}`;
+          } else {
+            link.href = `Cadastro de Musicas.html?culto=${encodeURIComponent(cultoNome || '')}&source=Cadastro%20de%20Repertorio.html`;
+          }
+        }
+
+        if (!cultoNome) return;
+
+        // Localiza a data e nome do culto para os campos ocultos
+        const infoCulto = transformData.find(i => i.Cultos === cultoNome);
+        if (infoCulto) {
+          document.getElementById('hiddenData').value = infoCulto.Data;
+          document.getElementById('hiddenNomeCulto').value = infoCulto["Nome dos Cultos"];
+        }
+
+        // Filtra pessoas da aba Transformar para este culto com as funções desejadas
+        const funcoesPermitidas = ["Ministro", "Back", "Violão"];
+
+        const escalados = transformData.filter(item =>
+          item.Cultos === cultoNome &&
+          funcoesPermitidas.includes(item.Função)
+        );
+
+        if (escalados.length > 0) {
+          escalados.forEach(pessoa => {
+            tsMinistro.addOption({ value: pessoa.Nome, text: pessoa.Nome + " (" + pessoa.Função + ")" });
+          });
+        } else {
+          tsMinistro.addOption({ value: "", text: "Ninguém escalado com estas funções", disabled: true });
+        }
+      }
+
+      document.getElementById('repertorioForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        const status = document.getElementById('status');
+
+        const data = {};
+        new FormData(this).forEach((v, k) => data[k] = v);
+
+        // 1. Atualiza UI/Cache local imediatamente
+        SyncManager.updateLocalCache("Repertório", "add", data);
+
+        // 2. Adiciona à fila de sincronização
+        SyncManager.addToQueue(data);
+
+        // 3. Feedback visual imediato
+        status.innerHTML = "<span class='btn-premium' style='background:var(--accent-green); position:static;'>✅ Salvo localmente! Sincronizando...</span>";
+        status.style.display = "block";
+        tsMusica.clear();
+        tsTom.clear();
+
+        // Opcional: Redirecionar ou avisar que será enviado ao voltar online
+        if (!navigator.onLine) {
+          status.innerHTML = "<span class='btn-premium' style='background:var(--accent-gold); position:static;'>☁️ Salvo offline. Sincronizará depois.</span>";
+        }
       });
-      tsMinistro = new TomSelect("#ministroSelect");
-      tsMusica = new TomSelect("#musicaSelect");
-      tsTom = new TomSelect("#tomSelect");
-    }
 
-    async function carregarDados() {
-      try {
-        initSelects();
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-
-        // Carregar do Cache se disponível
-        const cachedEscala = localStorage.getItem('offline_escala');
-        const cachedMusicas = localStorage.getItem('offline_musicas');
-
-        let transformDataTemp = [];
-        let musicasDataTemp = [];
-
-        // LOAD TRANSFORM
-        if (cachedEscala) {
-          transformDataTemp = JSON.parse(cachedEscala);
-        } else {
-          const resT = await fetch(SCRIPT_URL + "?sheet=Transformar");
-          const jsonT = await resT.json();
-          transformDataTemp = jsonT.data;
-          localStorage.setItem('offline_escala', JSON.stringify(transformDataTemp));
-        }
-        transformData = transformDataTemp; // Global var usage
-
-        // Add Cultos
-        const cultosUnicos = [...new Set(transformData.map(i => i.Cultos))];
-        tsCulto.clearOptions();
-        cultosUnicos.forEach(cNome => {
-          const item = transformData.find(i => i.Cultos === cNome);
-          if (new Date(item.Data) >= hoje) {
-            tsCulto.addOption({ value: cNome, text: cNome });
-          }
-        });
-
-        // LOAD MUSICAS
-        if (cachedMusicas) {
-          musicasDataTemp = JSON.parse(cachedMusicas);
-        } else {
-          const resM = await fetch(SCRIPT_URL + "?sheet=Musicas");
-          const jsonM = await resM.json();
-          musicasDataTemp = jsonM.data;
-          localStorage.setItem('offline_musicas', JSON.stringify(musicasDataTemp));
-        }
-
-        musicasDataTemp.forEach(m => {
-          if (m.MusicaCorigida) {
-            let txt = m.MusicaCorigida + " - " + m["Cantor Corrigido"];
-            tsMusica.addOption({ value: txt, text: txt });
-          }
-        });
-
-        // AUTO-SELECT CULTO FROM URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoCulto = urlParams.get('culto');
-        if (autoCulto) {
-          tsCulto.setValue(autoCulto);
-        }
-
-      } catch (e) { console.error(e); }
-    }
-
-    // Função que filtra os Ministros baseada no Culto selecionado
-    function filtrarEscala(cultoNome) {
-      tsMinistro.clear();
-      tsMinistro.clearOptions();
-
-      // Atualiza link de Adicionar Música para manter o estado
-      const link = document.getElementById('linkAddMusica');
-      if (link) {
-        // Pega query params atuais
-        const urlParams = new URLSearchParams(window.location.search);
-        const source = urlParams.get('source');
-
-        if (source) {
-          const currentUrl = `Cadastro de Repertorio.html?culto=${encodeURIComponent(cultoNome || '')}&source=${encodeURIComponent(source)}`;
-          link.href = `Cadastro de Musicas.html?culto=${encodeURIComponent(cultoNome || '')}&source=${encodeURIComponent(currentUrl)}`;
-        } else {
-          link.href = `Cadastro de Musicas.html?culto=${encodeURIComponent(cultoNome || '')}&source=Cadastro%20de%20Repertorio.html`;
-        }
-      }
-
-      if (!cultoNome) return;
-
-      // Localiza a data e nome do culto para os campos ocultos
-      const infoCulto = transformData.find(i => i.Cultos === cultoNome);
-      if (infoCulto) {
-        document.getElementById('hiddenData').value = infoCulto.Data;
-        document.getElementById('hiddenNomeCulto').value = infoCulto["Nome dos Cultos"];
-      }
-
-      // Filtra pessoas da aba Transformar para este culto com as funções desejadas
-      const funcoesPermitidas = ["Ministro", "Back", "Violão"];
-
-      const escalados = transformData.filter(item =>
-        item.Cultos === cultoNome &&
-        funcoesPermitidas.includes(item.Função)
-      );
-
-      if (escalados.length > 0) {
-        escalados.forEach(pessoa => {
-          tsMinistro.addOption({ value: pessoa.Nome, text: pessoa.Nome + " (" + pessoa.Função + ")" });
-        });
+      window.onload = carregarDados;
+    </script>
+  </div>
+  <script>
+    function handleBack() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const source = urlParams.get('source');
+      if (source) {
+        window.location.href = source;
       } else {
-        tsMinistro.addOption({ value: "", text: "Ninguém escalado com estas funções", disabled: true });
+        window.location.href = 'MenuMusicas.html';
       }
     }
-
-    document.getElementById('repertorioForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnSubmit');
-      const status = document.getElementById('status');
-
-      const data = {};
-      new FormData(this).forEach((v, k) => data[k] = v);
-
-      // 1. Atualiza UI/Cache local imediatamente
-      SyncManager.updateLocalCache("Repertório", "add", data);
-
-      // 2. Adiciona à fila de sincronização
-      SyncManager.addToQueue(data);
-
-      // 3. Feedback visual imediato
-      status.innerText = "✅ Salvo localmente! Sincronizando...";
-      status.className = "success";
-      status.style.display = "block";
-      tsMusica.clear();
-      tsTom.clear();
-
-      // Opcional: Redirecionar ou avisar que será enviado ao voltar online
-      if (!navigator.onLine) {
-        status.innerText = "☁️ Salvo offline. Será enviado quando houver conexão.";
-      }
-    });
-
-    window.onload = carregarDados;
   </script>
-</div>
-</div>
-
-<script>
-  function handleBack() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const source = urlParams.get('source');
-    if (source) {
-      window.location.href = source;
-    } else {
-      window.location.href = 'MenuMusicas.html';
-    }
-  }
-</script>
 </body>
 
 </html>

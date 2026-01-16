@@ -1,5 +1,5 @@
 // Configuração centralizada do App
-const VERSION = '55';
+const VERSION = '65';
 const APP_CONFIG = {
     VERSION,
     CACHE_NAME: `louvor-app-v${VERSION}`,

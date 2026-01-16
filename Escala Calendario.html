@@ -9,8 +9,13 @@
   <script src="config.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
+  <link rel="stylesheet" href="assets/css/main.css">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
+    body {
+      padding-top: 80px;
+    }
+
     :root {
       --primary: #2c3e50;
       --accent: #3498db;
@@ -74,18 +79,20 @@
     }
 
     .header-bar {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      padding: 10px 15px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      width: 100%;
-      box-sizing: border-box;
-      position: sticky;
+      padding: 0 20px;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 1000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .header-title {
@@ -141,6 +148,8 @@
       outline: none;
       font-size: 1rem;
       box-sizing: border-box;
+      margin-bottom: 0;
+      /* Override generic margin */
     }
 
     #personSearch:focus {
@@ -445,23 +454,26 @@
     </button>
   </div>
 
-  <div class="container" style="padding: 15px;">
+  <div class="premium-container" style="max-width: 1250px;">
 
-    <div class="search-box" style="display: flex; gap: 10px; align-items: center;">
+    <div class="search-box" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
       <div style="position: relative; flex-grow: 1;">
-        <i class="fas fa-search"></i>
-        <input type="text" id="personSearch" placeholder="Filtrar por nome..." onkeyup="renderCalendars()">
+        <i class="fas fa-search" style="position: absolute; left: 18px; top: 12px; color: #95a5a6; z-index: 1;"></i>
+        <input type="text" id="personSearch" placeholder="Filtrar por nome..." onkeyup="renderCalendars()"
+          class="premium-input" style="padding-left: 45px;">
       </div>
-      <button class="btn-export" onclick="exportarEscala()" id="btnExport" style="display: none; margin: 0;">
+      <button class="btn-export" onclick="exportarEscala()" id="btnExport"
+        style="display: none; margin: 0; background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 25px; font-size: 0.85rem; cursor: pointer; align-items: center; gap: 8px;">
         <i class="fas fa-camera"></i> Foto
       </button>
     </div>
 
-    <div id="loader" class="loader" style="display:none"><i class="fas fa-sync fa-spin"></i> Carregando...</div>
+    <div id="loader" class="loader" style="display:none; text-align: center; margin-bottom: 20px;"><i
+        class="fas fa-sync fa-spin"></i> Carregando...</div>
 
-    <div class="calendar-container" id="calendarsContainer" style="display:none">
-      <div class="month-wrapper" id="month1"></div>
-      <div class="month-wrapper" id="month2"></div>
+    <div class="calendar-container" id="calendarsContainer" style="display:none; flex-direction: column; gap: 20px;">
+      <div class="premium-card month-wrapper" id="month1" style="padding: 15px;"></div>
+      <div class="premium-card month-wrapper" id="month2" style="padding: 15px;"></div>
     </div>
 
     <div id="eventModal" class="modal">
@@ -886,13 +898,6 @@ ${c.membros.map(m => {
       }
     </script>
   </div>
-  // Preserves current calendar state (though reloading the page resets it, for now we just make sure back button works)
-  let url = `Cadastro de Repertorio.html?culto=${encodeURIComponent(culto)}`;
-  const sourceUrl = `Escala Calendario.html`;
-  url += `&source=${encodeURIComponent(sourceUrl)}`;
-  window.location.href = url;
-  }
-  </script>
 </body>
 
 </html>
