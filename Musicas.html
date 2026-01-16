@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
   <script src="config.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
   <style>
     :root {
       --primary: #2c3e50;
@@ -473,14 +474,44 @@
 
       async function excluirDaBiblioteca(musica, cantor) {
         if (!confirm(`Deseja remover "${musica}" da biblioteca permanentemente?`)) return;
+
+        // Encontrar o cartão da música para dar feedback visual imediato
+        const cards = document.querySelectorAll('.music-card');
+        let cardToRemove = null;
+        for (let card of cards) {
+          const searchData = card.getAttribute('data-search');
+          if (searchData.includes(musica.toLowerCase()) && searchData.includes(cantor.toLowerCase())) {
+            cardToRemove = card;
+            break;
+          }
+        }
+
+        if (cardToRemove) {
+          // Estado de "Excluindo..."
+          cardToRemove.style.opacity = '0.5';
+          cardToRemove.innerHTML = '<div style="text-align:center; padding:20px; color:#e74c3c; font-weight:bold;"><i class="fas fa-spinner fa-spin"></i> Excluindo...</div>';
+        }
+
         try {
           const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({ action: "delete", sheet: "Musicas", musica: musica, cantor: cantor })
           });
           const res = await response.json();
-          if (res.status === "success") { alert("Música removida!"); loadData(); }
-        } catch (e) { setTimeout(() => loadData(), 1500); }
+          if (res.status === "success") {
+            if (cardToRemove) {
+              // Animação final de sumir
+              cardToRemove.style.transition = 'all 0.5s';
+              cardToRemove.style.transform = 'scale(0)';
+              setTimeout(() => cardToRemove.remove(), 500);
+            } else {
+              loadData();
+            }
+          }
+        } catch (e) {
+          // Se der erro, recarrega tudo para garantir consistência
+          setTimeout(() => loadData(), 1500);
+        }
       }
 
       function toggle(el) { el.classList.toggle('open'); }

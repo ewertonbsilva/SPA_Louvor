@@ -6,7 +6,7 @@ const PERMISSIONS = {
     // Perfis definidos no Login.html
     ROLES: {
         ADMIN: "Admin",
-        SUPERADMIN: "SuperAdmin",
+        LIDER: "Lider",
         ADVANCED: "Advanced",
         USER: "User"
     },
@@ -14,17 +14,17 @@ const PERMISSIONS = {
     // Páginas ou IDs de menu que cada perfil pode acessar
     // Se não estiver na lista, o acesso é negado (ou o item é escondido)
     ACCESS_CONTROL: {
-        "SuperAdmin": {
-            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuAcessoMesa", "menuMontarRepertorio"],
-            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html"]
+        "Lider": {
+            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],
+            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html"]
         },
         "Admin": {
-            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuAcessoMesa", "menuMontarRepertorio"],
-            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html"]
+            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],
+            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html"]
         },
         "Advanced": {
-            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuAcessoMesa", "menuMontarRepertorio"],
-            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html"]
+            allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuUtilitarios", "menuMontarRepertorio"],
+            allowedPages: ["Cadastro de Musicas.html", "Cadastro de Repertorio.html", "AcessoMesa.html", "Historico de Musicas.html", "MenuUtilitarios.html"]
         },
         "User": {
             allowedMenus: ["menuEscalas", "menuMusicas", "menuEquipe", "menuMontarRepertorio"], // Apenas Acesso a Mesa oculto
@@ -41,6 +41,9 @@ const PERMISSIONS = {
  * @returns {boolean}
  */
 function hasPermission(role, item, type = "menu") {
+    // Mapping old "SuperAdmin" to new "Lider" just in case data hasn't changed
+    if (role === "SuperAdmin") role = "Lider";
+
     const config = PERMISSIONS.ACCESS_CONTROL[role] || PERMISSIONS.ACCESS_CONTROL["User"];
     if (type === "menu") {
         return config.allowedMenus.includes(item);

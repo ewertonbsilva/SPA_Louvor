@@ -23,7 +23,11 @@ const ASSETS_TO_CACHE = [
   './assets/Leão.png',
   './assets/backgroud.png',
   './manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css',
+  './assets/backgroud.png',
+  './manifest.json',
+  './assets/bootstrap/css/bootstrap.min.css',
+  './assets/bootstrap/js/bootstrap.bundle.min.js',
+  './assets/Font Awesome/css/all.css',
   'https://html2canvas.hertzen.com/dist/html2canvas.min.js',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];

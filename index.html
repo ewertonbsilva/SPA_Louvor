@@ -11,8 +11,9 @@
   <script src="config.js"></script>
   <script src="permissions.js"></script>
   <script src="sync.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
   <style>
     :root {
       --primary: #2c3e50;
@@ -701,8 +702,8 @@
         userNameEl.innerText = nome;
       }
 
-      // Botões só para Admin
-      if (userData.Role !== 'Admin') {
+      // Botões só para Admin e Lider
+      if (userData.Role !== 'Admin' && userData.Role !== 'Lider' && userData.Role !== 'SuperAdmin') {
         document
           .querySelectorAll('.admin-only')
           .forEach(el => el.style.display = 'none');
@@ -781,9 +782,9 @@
           <i class="fas fa-users"></i>
           <span>Equipe</span>
         </a>
-        <a href="http://10.10.10.2" class="menu-item" id="menuAcessoMesa" target="_blank">
-          <i class="fas fa-sliders-h" style="color: #34495e;"></i>
-          <span>Acesso a Mesa</span>
+        <a href="MenuUtilitarios.html" class="menu-item" id="menuUtilitarios">
+          <i class="fas fa-tools" style="color: #7f8c8d;"></i>
+          <span>Utilitários</span>
         </a>
       </div>
     </div>
