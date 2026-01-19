@@ -14,6 +14,8 @@
   <style>
     body {
       padding-top: 80px;
+      padding-bottom: 100px;
+      /* Prevent bottom cutoff */
     }
 
     :root {
@@ -592,7 +594,7 @@
               <div class="section-title-container">
                 <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
                 ${estouEscalado ? `
-                  <button class="btn-ausencia" onclick="comunicarAusencia('${dataFormatada}', '${item.info["Nome dos Cultos"]}', event)" title="Comunicar Aviso">
+                  <button class="btn-ausencia" onclick="comunicarAusencia('${item.info.Cultos}', event)" title="Comunicar Aviso">
                     <i class="fas fa-bell"></i> Avisos
                   </button>
                 ` : ''}
@@ -710,28 +712,24 @@
         }
       }
 
-      async function comunicarAusencia(dataCulto, nomeCulto, event) {
+      async function comunicarAusencia(fullCultoString, event) {
         event.stopPropagation();
         const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
-        const meuNome = userToken.Nome || "Membro";
+        const meuNome = userToken.User || userToken.Nome || "Membro";
 
-        // Aqui está o ajuste: usamos o nome do culto e a data de forma limpa
-        // Se o seu log mostrou "21. Celebração - 18/01", o prompt deve refletir isso
-        const info = prompt(`Olá ${meuNome}, qual aviso você deseja comunicar para o ${nomeCulto} (${dataCulto}):`);
+        const info = prompt(`Olá, qual aviso você deseja comunicar para: ${fullCultoString}?`);
 
         if (!info || info.trim() === "") return;
 
-        const id_Lembrete = Math.random().toString(16).slice(2, 10);
+        const id_Lembrete = Math.random().toString(16).substr(2, 8); // Short Hash 85d9f76e
 
         // IMPORTANTE: O campo 'Culto' deve ser EXATAMENTE o que está na coluna 'Cultos' da aba Transformar
-        // O seu código anterior estava gerando uma string diferente.
         const payload = {
           sheet: "Lembretes",
           id_Lembrete,
-          Componente: meuNome,
+          Componente: meuNome, // User ID de login
           Data: new Date().toLocaleDateString('pt-BR'),
-          // Ajustado para bater com a chave de busca (Nome do Culto + Data)
-          Culto: `${nomeCulto}`,
+          Culto: fullCultoString, // "01. Passos de Fé - 01/01"
           Info: info
         };
 

@@ -11,27 +11,32 @@
   <script src="config.js"></script>
   <script src="permissions.js"></script>
   <script src="sync.js"></script>
+  <script src="temas-core.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
   <link rel="stylesheet" href="assets/css/main.css">
   <style>
     :root {
+      /* Valores padrão (serão sobrescritos pelo temas.js) */
       --primary: #1e293b;
       --secondary: #3498db;
       --accent: #e67e22;
       --bg: #f8fafc;
+      --color-success: #27ae60;
+      --color-danger: #ef4444;
+      --color-warning: #f59e0b;
+      --text-muted: #94a3b8;
+      --header-bg: rgba(255, 255, 255, 0.9);
     }
 
-    /* 1. TELA FIXA (SEM ROLAGEM) */
+    /* 1. TELA ROLÁVEL (SCROLL LOCK REMOVIDO) */
     body {
       font-family: 'Outfit', sans-serif;
       background-color: var(--bg);
       margin: 0;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      /* Trava a rolagem */
+      /* height: 100vh; REMOVIDO */
+      /* overflow: hidden; REMOVIDO */
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
@@ -40,7 +45,7 @@
 
     /* PREMIUM HEADER */
     .header-bar {
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--header-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       height: 70px;
@@ -88,14 +93,14 @@
 
     .nav-btn:active {
       transform: scale(0.92);
-      background: #f1f5f9;
+      background: var(--bg);
     }
 
     .notif-badge {
       position: absolute;
       top: -2px;
       right: -2px;
-      background: #ef4444;
+      background: var(--color-danger);
       color: white;
       font-size: 0.65rem;
       min-width: 16px;
@@ -152,14 +157,14 @@
       right: 15px;
       font-size: 1.5rem;
       font-weight: bold;
-      color: #94a3b8;
+      color: var(--text-muted);
       cursor: pointer;
       line-height: 1;
       transition: color 0.2s;
     }
 
     .close-banner:hover {
-      color: #1e293b;
+      color: var(--primary);
     }
 
     .install-content {
@@ -249,7 +254,7 @@
 
     .menu-item:active {
       transform: scale(0.95);
-      background: #f1f5f9;
+      background: var(--bg);
     }
 
     .menu-item i {
@@ -260,7 +265,7 @@
     .menu-item span {
       font-weight: 700;
       font-size: 0.9rem;
-      color: #0f172a;
+      color: var(--primary);
     }
 
     /* DASHBOARD MAIN CONTAINER */
@@ -288,24 +293,22 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
-      /* Mantendo o seu estilo, mas trocando a borda de baixo pela lateral */
       border: none;
       border-left: 5px solid var(--secondary);
-      /* A barra colorida do lado */
-
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       transition: all 0.3s ease;
     }
 
     /* Ajustando cores específicas das barras laterais */
     .kpi-card:nth-child(2) {
-      border-left-color: #27ae60;
+      border-left-color: var(--secondary);
+      /* Padronizado com o tema */
     }
 
     /* Verde para Escala */
     .kpi-card:nth-child(3) {
-      border-left-color: #e67e22;
+      border-left-color: var(--secondary);
+      /* Padronizado com o tema */
     }
 
     /* Laranja para Cultos */
@@ -325,13 +328,13 @@
       display: block;
       font-size: 1.4rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary);
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .kpi-card .label {
       font-size: 0.65rem;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -379,7 +382,7 @@
     }
 
     .btn-sync:hover {
-      background: #334155;
+      background: var(--secondary);
       box-shadow: 0 12px 20px -3px rgba(30, 41, 59, 0.3);
     }
 
@@ -390,7 +393,7 @@
 
     .user-welcome {
       font-size: 0.95rem;
-      color: #64748b;
+      color: var(--text-muted);
       margin-bottom: 5px;
       font-weight: 500;
       flex-shrink: 0;
@@ -404,7 +407,7 @@
       margin-top: 5px;
       /* Reduzido */
       font-size: 0.7rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 500;
       text-align: center;
       flex-shrink: 0;
@@ -426,7 +429,7 @@
     }
 
     .progress-fill {
-      background: #10b981;
+      background: var(--color-success);
       height: 100%;
       width: 0%;
       transition: width 0.3s;
@@ -434,7 +437,7 @@
 
     .status-text {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--text-muted);
       margin-top: 8px;
       display: block;
       font-weight: 600;
@@ -500,12 +503,12 @@
       top: 20px;
       font-size: 1.5rem;
       cursor: pointer;
-      color: #94a3b8;
+      color: var(--text-muted);
       transition: 0.2s;
     }
 
     .close-modal:hover {
-      color: #1e293b;
+      color: var(--primary);
     }
 
     .modal-header {
@@ -513,12 +516,18 @@
       padding-bottom: 15px;
       margin-bottom: 20px;
       text-align: left;
+      display: flex;
+      flex-direction: column;
+      /* Stack vertically */
+      align-items: flex-start;
+      gap: 5px;
     }
 
     .modal-header h3 {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--primary);
+      margin: 0;
     }
 
     .detail-item {
@@ -537,20 +546,20 @@
     .detail-culto {
       font-weight: 700;
       font-size: 0.95rem;
-      color: #1e293b;
+      color: var(--primary);
     }
 
     .detail-date {
-      color: #3498db;
+      color: var(--secondary);
       font-size: 0.8rem;
       font-weight: 800;
-      background: #f1faff;
+      background: var(--bg);
       padding: 2px 8px;
       border-radius: 6px;
     }
 
     .detail-funcoes {
-      color: #64748b;
+      color: var(--text-muted);
       font-size: 0.8rem;
       font-weight: 500;
       display: flex;
@@ -559,8 +568,24 @@
     }
 
     @media (max-width: 400px) {
+
+      /* REMOVED KPI STACKING LOGIC - KEEP SIDE BY SIDE OR WRAP NATURALLY */
       .kpi-container {
-        grid-template-columns: 1fr;
+        /* grid-template-columns: 1fr; REMOVIDO */
+        /* Mantendo o padrão ou permitindo ajuste automatico */
+        gap: 5px;
+      }
+
+      .kpi-card {
+        padding: 10px 2px;
+      }
+
+      .kpi-card .value {
+        font-size: 1.1rem;
+      }
+
+      .kpi-card i {
+        font-size: 1rem;
       }
     }
 
@@ -639,6 +664,51 @@
         margin-right: auto !important;
         flex-shrink: 0;
       }
+
+      .btn-premium {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        width: 100%;
+        font-weight: 700;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .btn-premium:hover {
+        opacity: 0.9;
+        transform: scale(0.98);
+      }
+
+      .btn-action-outline {
+        padding: 10px;
+        background: none;
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        color: var(--primary);
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      .btn-action-outline:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-action-outline.danger {
+        border-color: var(--color-danger);
+        color: var(--color-danger);
+      }
+
+      .btn-action-outline.danger:hover {
+        background: var(--color-danger);
+        color: white;
+      }
     }
   </style>
 </head>
@@ -708,13 +778,13 @@
           <span class="value" id="kpi-membros">0</span>
           <span class="label">Membros</span>
         </div>
-        <div class="kpi-card" style="border-color: #27ae60;">
-          <i class="fas fa-calendar-check" style="color: #27ae60;"></i>
+        <div class="kpi-card" style="border-color: var(--secondary);">
+          <i class="fas fa-calendar-check" style="color: var(--secondary);"></i>
           <span class="label">Sua Próxima Escala</span>
           <span class="value" id="kpi-proxima" style="font-size: 0.9rem; white-space: nowrap;">Carregando...</span>
         </div>
-        <div class="kpi-card" style="border-color: #e67e22;">
-          <i class="fas fa-church" style="color: #e67e22;"></i>
+        <div class="kpi-card" style="border-color: var(--secondary);">
+          <i class="fas fa-church" style="color: var(--secondary);"></i>
           <span class="value" id="kpi-cultos">0</span>
           <span class="label">Cultos</span>
         </div>
@@ -744,7 +814,7 @@
           <span>Equipe</span>
         </a>
         <a href="MenuUtilitarios.html" class="menu-item" id="menuUtilitarios">
-          <i class="fas fa-tools" style="color: #7f8c8d;"></i>
+          <i class="fas fa-tools"></i>
           <span>Utilitários</span>
         </a>
       </div>
@@ -793,12 +863,8 @@
         <!-- Notificações aqui -->
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-        <button onclick="marcarTodasLidas()"
-          style="padding:10px; background:none; border:1px solid #ddd; border-radius:8px; cursor:pointer; font-size:0.75rem; color:#666;">Ler
-          todas</button>
-        <button onclick="limparNotificacoesLidas()"
-          style="padding:10px; background:none; border:1px solid #e74c3c; border-radius:8px; cursor:pointer; font-size:0.75rem; color:#e74c3c;">Limpar
-          lidas</button>
+        <button onclick="marcarTodasLidas()" class="btn-action-outline">Ler todas</button>
+        <button onclick="limparNotificacoesLidas()" class="btn-action-outline danger">Limpar lidas</button>
       </div>
     </div>
   </div>
@@ -843,7 +909,7 @@
     </div>
   </div>
 
-  <script src="index_logic.js"></script>
+  <script src="index_logic.js?v=2.3"></script>
 
 </body>
 

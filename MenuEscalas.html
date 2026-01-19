@@ -9,9 +9,14 @@
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
     <link rel="stylesheet" href="assets/css/main.css">
+    <script src="temas-core.js"></script>
     <style>
         body {
             padding-top: 80px;
+            padding-bottom: 40px;
+            /* Fix bottom cutoff */
+            /* Background will be set by temas-core.js */
+            min-height: 100vh;
         }
 
         .container {
@@ -76,7 +81,8 @@
             padding: 20px;
             border-radius: 15px;
             text-decoration: none;
-            color: #2c3e50;
+            color: #000;
+            /* FORCE BLACK */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
             display: flex;
@@ -96,7 +102,8 @@
 
         .menu-item i {
             font-size: 2rem;
-            color: #3498db;
+            color: #000 !important;
+            /* FORCE BLACK */
             margin-bottom: 5px;
         }
 
@@ -142,11 +149,11 @@
                 <span>Lista</span>
             </a>
             <a href="Escala Calendario.html" class="menu-card">
-                <i class="fas fa-calendar-days" style="color: var(--accent-gold);"></i>
+                <i class="fas fa-calendar-days"></i>
                 <span>Calendário</span>
             </a>
             <a href="Limpeza.html" class="menu-card">
-                <i class="fas fa-broom" style="color: var(--accent-green);"></i>
+                <i class="fas fa-broom"></i>
                 <span>Limpeza</span>
             </a>
         </div>

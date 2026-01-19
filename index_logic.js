@@ -129,7 +129,10 @@ function initDashboard() {
         document.getElementById('dashLoader').style.display = 'none';
         processarERenderizar(JSON.parse(cached));
     } else {
-        document.getElementById('dashLoader').innerHTML = "Aguardando sincronização...";
+        // Only show loader if we REALLY don't have data
+        if (!currentChart) {
+            document.getElementById('dashLoader').innerHTML = "Aguardando sincronização...";
+        }
     }
 }
 
@@ -183,26 +186,36 @@ function processarERenderizar(dados) {
 
     // CALCULAR PRÓXIMA ESCALA DO USUÁRIO
     const user = JSON.parse(localStorage.getItem('user_token') || '{}');
-    // Tenta usar Nome ou User, o que tiver
-    const rawNome = user.Nome || user.User || "";
-    const meuNome = normalize(rawNome);
-
-    // Verificação de debug (se quiser ver no console)
-    console.log("Meu Nome Normalizado:", meuNome);
+    const myUser = (user.User || "").toLowerCase().trim(); // Busca por User ID
+    // fallback se não tiver user, tenta nome? O usuario pediu User explicitamente. 
+    // "a notificação de proxima escala tem que ser pelo User de login e não pelo nome."
 
     const escalasUsuario = dados
         .filter(e => {
-            if (!e.Nome || !meuNome) return false;
+            // Verifica match exato ou inclusão do User login na coluna Nome?
+            // User disse "salvar o User de login... proxima escala tem que ser pelo User"
+            // Assumindo que a planilha escala agora tem User ou que o "Nome" na planilha TEM QUE bater com "User".
+            // Se a planilha tem Nomes (Ewerton), e o User for (ewerton.silva), isso vai quebrar se a planilha não for atualizada.
+            // Mas vou seguir a instrução: filtrar pelo User.
+
+            // Caso a coluna da planilha ainda seja "Nome" e tenha o Nome da pessoa, isso não vai funcionar se não houver coluna "User" na planilha.
+            // Vou assumir que o "Nome" na planilha deve ser comparado ao User OU existe uma coluna User.
+            // O código anterior comparava e.Nome com user.Nome.
+
+            if (!myUser) return false;
+
             const dataE = new Date(e.Data);
-            // Ajusta timezone para evitar problemas de "ontem"
             dataE.setHours(dataE.getHours() + 12);
 
-            const nomeEscala = normalize(e.Nome);
+            // Tenta comparar Nome da escala com User (muitas vezes é o mesmo ou parecido)
+            // OU se tiver coluna User na escala
+            const escalaNome = normalize(e.Nome);
+            const escalaUser = e.User ? normalize(e.User) : "";
 
-            // Match Bidirecional: "João" == "João Silva" ou "João Silva" == "João"
-            const match = nomeEscala.includes(meuNome) || meuNome.includes(nomeEscala);
+            // Match: Se o User igual ao User da escala, ou se o Nome da escala contem o User (arriscado), ou vice-versa.
+            // Melhor: Se na escala tem e.Nome, vamos ver se e.Nome bate com myUser.
+            const match = (escalaUser === myUser) || (escalaNome === myUser) || escalaNome.includes(myUser);
 
-            // Data deve ser >= Hoje (zerado)
             return dataE >= hoje && match;
         })
         .sort((a, b) => new Date(a.Data) - new Date(b.Data));
@@ -241,41 +254,56 @@ let currentChart = null;
 function renderizarGrafico(lista) {
     const labels = lista.map(d => d.nome);
     const valores = lista.map(d => d.total);
-    const cores = labels.map((_, i) => `hsla(${200 + (i * 10)}, 70%, 50%, 0.85)`);
+
+    // THEME AWARE COLORS
+    const style = getComputedStyle(document.documentElement);
+    const themePrimary = style.getPropertyValue('--secondary').trim() || '#3498db';
 
     const ctx = document.getElementById('escalaChart').getContext('2d');
-    if (currentChart) currentChart.destroy();
 
-    currentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: valores,
-                backgroundColor: cores,
-                borderRadius: 5,
-                // barThickness: 15, <--- APAGUE ESTA LINHA
-                barPercentage: 0.7,    // Faz a barra ocupar 90% da largura da linha
-                categoryPercentage: 1 // Diminui o espaço entre os grupos de linhas
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            onClick: (evt, elements) => {
-                if (elements.length > 0) {
-                    const index = elements[0].index;
-                    abrirDetalhes(labels[index]);
-                }
+    // Create Gradient (Restored)
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, themePrimary);
+    gradient.addColorStop(1, themePrimary + '33');
+
+    if (currentChart) {
+        // UPDATE EXISTING CHART (Silent)
+        currentChart.data.labels = labels;
+        currentChart.data.datasets[0].data = valores;
+        currentChart.data.datasets[0].backgroundColor = gradient;
+        currentChart.update('none'); // Update without animation
+    } else {
+        // CREATE NEW CHART
+        currentChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: valores,
+                    backgroundColor: gradient,
+                    borderRadius: 5,
+                    barPercentage: 0.7,
+                    categoryPercentage: 1
+                }]
             },
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
-                y: { grid: { display: false }, ticks: { font: { weight: '600', size: 10 } } }
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (evt, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        abrirDetalhes(labels[index]);
+                    }
+                },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                    y: { grid: { display: false }, ticks: { font: { weight: '600', size: 10 } } }
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 function abrirDetalhes(nome) {
@@ -540,12 +568,19 @@ function abrirNotificacoes() {
     const notifs = JSON.parse(localStorage.getItem('user_notificacoes') || '[]');
     const container = document.getElementById('notifLista');
 
+    const friendlyType = (t) => {
+        if (t === 'aviso_lider') return 'Aviso';
+        if (t === 'escala') return 'Escala';
+        if (t === 'musica') return 'Música';
+        return t;
+    };
+
     if (notifs.length === 0) {
         container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">Nenhuma notificação por enquanto.</div>';
     } else {
         container.innerHTML = notifs.map(n => `
       <div class="notif-item ${n.read ? '' : 'unread'}">
-        <span class="notif-type type-${n.type}">${n.type}</span>
+        <span class="notif-type type-${n.type}">${friendlyType(n.type)}</span>
         <div class="notif-msg">${n.msg}</div>
         <div class="notif-time">${new Date(n.time).toLocaleString('pt-BR')}</div>
         <div class="notif-actions">
@@ -745,13 +780,18 @@ async function enviarAvisoGeral() {
     }
 
     btn.disabled = true;
+    btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+    // Force refresh user data from token to ensure we have the User ID
+    const userToken = JSON.parse(localStorage.getItem('user_token') || '{}');
+    const myUser = userToken.User || userToken.Nome; // Prioritize User ID
 
     const payload = {
         action: "add",
         sheet: "Lembretes",
-        id_Lembrete: "AVISO-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        Componente: userData.Nome || "Admin",
+        id_Lembrete: Math.random().toString(16).substr(2, 8), // Short updated hash 85d9f76e
+        Componente: myUser, // Salvar User de login explicitly
         Data: new Date().toLocaleDateString('pt-BR'),
         Culto: "AVISO_LIDER",
         Info: text
@@ -764,6 +804,8 @@ async function enviarAvisoGeral() {
         });
         const res = await response.json();
         if (res.status === "success") {
+            // alert("Aviso enviado com sucesso!"); // Silent or Toast? User asked for silent chart but this is manual sending.
+            // Keeping alert for confirmation of manual action but maybe improved.
             alert("Aviso enviado com sucesso!");
             fecharModalAvisoGeral();
             backgroundSync(); // Atualiza localmente
