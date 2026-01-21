@@ -6,7 +6,7 @@
     <script src="temas-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chamada Consagração | Premium</title>
+    <title>Chamada | Premium</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
@@ -49,7 +49,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 15px;
             position: fixed;
             top: 0;
             left: 0;
@@ -59,6 +59,13 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
 
+        .header-left-nav,
+        .header-right-nav {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
         .header-title {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 700;
@@ -66,26 +73,100 @@
             letter-spacing: -0.02em;
             margin: 0;
             color: var(--primary);
+            flex-grow: 1;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .nav-btn {
-            width: 42px;
-            height: 42px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            background: white;
+            cursor: pointer;
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s;
             text-decoration: none;
-            box-shadow: var(--shadow-sm);
+            font-size: 1.2rem;
         }
 
         .nav-btn:active {
-            transform: scale(0.92);
-            background: #f1f5f9;
+            transform: scale(0.9);
+        }
+
+        /* THEME PANEL */
+        .theme-panel {
+            display: none;
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            z-index: 10001;
+            max-width: 240px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .theme-panel h3 {
+            margin-top: 0;
+            font-weight: 800;
+            font-size: 1rem;
+            color: #000 !important;
+        }
+
+        .theme-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .theme-btn-circ {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .theme-btn-circ.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: #2c3e50;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .container {
@@ -409,14 +490,24 @@
     </style>
 </head>
 
-<body>
+<body style="padding-top: 80px;">
 
     <div class="header-bar">
-        <button class="nav-btn" id="btnBack" title="Voltar">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <h2 class="header-title" id="pageTitle">Chamada Consagração</h2>
-        <div style="width: 42px"></div>
+        <div class="header-left-nav">
+            <i class="fas fa-arrow-left nav-btn" id="btnBack" title="Voltar"></i>
+            <i class="fas fa-home nav-btn" onclick="window.location.href='index.html'" title="Início"></i>
+        </div>
+        <h2 class="header-title" id="pageTitle">Chamada</h2>
+        <div class="header-right-nav">
+            <i class="fas fa-palette nav-btn" onclick="toggleThemePanel()" title="Trocar Tema"></i>
+            <i class="fas fa-sync-alt nav-btn" onclick="fetchEvents()" title="Sincronizar"></i>
+        </div>
+    </div>
+
+    <div id="themePanel" class="theme-panel">
+        <h3>Escolha um Tema</h3>
+        <div class="theme-buttons" id="themeButtonsGrid"></div>
+        <button class="apply-btn" onclick="confirmarTema()">USAR ESTE TEMA</button>
     </div>
 
     <div class="container">
@@ -523,13 +614,17 @@
         let currentCompJustifying = null;
 
         document.getElementById('btnBack').addEventListener('click', () => {
-            if (document.getElementById('viewAttendance').style.display === 'flex' || document.getElementById('viewAttendance').style.display === 'block') {
+            const viewAttendance = document.getElementById('viewAttendance');
+            if (viewAttendance && (viewAttendance.style.display === 'flex' || viewAttendance.style.display === 'block')) {
                 showView('events');
                 fetchData(true); // silent refresh
             } else {
                 window.location.href = 'MenuUtilitarios.html';
             }
         });
+
+        // --- TEMA ---
+        // No local theme scripts needed, uses temas-core.js
 
         async function init() {
             await fetchData();

@@ -10,18 +10,18 @@
   <link rel="apple-touch-icon" href="assets/backgroud.png">
 
   <!-- Configs and Scripts -->
-  <script src="config.js"></script>
-  <script src="permissions.js"></script>
-  <script src="sync.js"></script>
+  <script src="config.js?v=2.9"></script>
+  <script src="permissions.js?v=2.9"></script>
+  <script src="sync.js?v=2.9"></script>
 
   <!-- Theme System -->
-  <script src="temas-lista.js"></script>
-  <script src="temas-core.js"></script>
+  <script src="temas-lista.js?v=2.9"></script>
+  <script src="temas-core.js?v=2.9"></script>
 
   <!-- UI Resources -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/Font Awesome/css/all.css">
-  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/main.css?v=2.9">
 
   <style>
     /* Estilos seguindo modelos_index.html */
@@ -44,6 +44,19 @@
       transition: background 0.3s ease;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      /* Centraliza conteúdo em telas grandes */
+    }
+
+    /* Container para evitar que o app se espalhe muito em desktop */
+    .app-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      position: relative;
     }
 
     .header-bar {
@@ -142,8 +155,14 @@
 
     .chart-wrapper {
       width: 100%;
-      min-height: 220px;
+      height: 320px;
       position: relative;
+    }
+
+    @media (max-width: 400px) {
+      .chart-wrapper {
+        height: 260px;
+      }
     }
 
     .notif-badge {
@@ -251,6 +270,219 @@
       font-size: 0.95rem;
       text-align: left;
       font-weight: 500;
+      margin-top: 20px;
+    }
+
+    /* BARRA DE NAVEGAÇÃO RESPONSIVA */
+    .tab-bar {
+      position: fixed;
+      background: var(--header-bg, rgba(255, 255, 255, 0.85));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1000;
+      display: flex;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* MODO RETRATO: EM BAIXO */
+    @media (orientation: portrait) {
+      .tab-bar {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 75px;
+        flex-direction: row;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .content {
+        padding-bottom: 90px;
+      }
+    }
+
+    /* MODO PAISAGEM: ESTRUTURA PREMIUM DE 3 COLUNAS */
+    @media (orientation: landscape) {
+      body {
+        overflow: hidden;
+        /* Evita scroll na dashboard em paisagem */
+        height: 100vh;
+      }
+
+      .tab-bar {
+        left: 0;
+        top: 70px;
+        bottom: 0;
+        width: 80px;
+        flex-direction: column;
+        justify-content: center;
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+      }
+
+      .content {
+        margin-left: 80px;
+        margin-top: 35px;
+        /* Space for sync button */
+        max-width: none;
+        height: calc(100vh - 105px);
+        /* 70px header + 35px button space */
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 8px;
+        padding: 5px 10px;
+        padding-top: 5px;
+        overflow: hidden;
+      }
+
+      .welcome {
+        grid-column: 1 / span 2;
+        margin-bottom: 2px;
+        margin-top: 0;
+        font-size: 0.7rem;
+        position: relative;
+        z-index: 10;
+      }
+
+      .chart-card {
+        grid-column: 1;
+        grid-row: 2;
+        height: 100%;
+        max-height: 100%;
+        /* Prevent overflow */
+        min-height: 0;
+        /* Critical: allow shrinking in grid */
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+        overflow: hidden;
+        /* Critical: prevents infinite growth */
+      }
+
+      .chart-wrapper {
+        flex: 1 1 0;
+        /* Grow, shrink, base 0 */
+        width: 100%;
+        min-height: 0;
+        /* Critical: allows shrinking in flexbox */
+        max-height: 100%;
+        /* Prevent overflow */
+        position: relative;
+        overflow: hidden;
+        /* Corta crescimento excessivo */
+      }
+
+      .kpi-grid {
+        grid-column: 2;
+        grid-row: 2;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between;
+        /* Distribute evenly */
+        gap: 0;
+        /* No gap, use space-between */
+        margin-bottom: 0;
+        height: 100%;
+        max-height: 100%;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .kpi-card {
+        flex: 1;
+        /* Equal distribution */
+        min-height: 60px;
+        max-height: none;
+        /* Allow growth */
+        padding: 8px;
+      }
+
+      /* Esconder elementos menos críticos na paisagem para focar no conteúdo */
+      .btn-sync,
+      .sync-status,
+      #lastUpdateDate {
+        display: none;
+      }
+
+      /* Mostrar botão real de sync no header em paisagem */
+      #landscapeSyncBtn {
+        display: block !important;
+        position: fixed;
+        top: 75px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1001;
+        background: var(--primary);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        font-family: 'Outfit', sans-serif;
+        transition: transform 0.2s;
+      }
+
+      #landscapeSyncBtn:active {
+        transform: translateX(-50%) scale(0.95);
+      }
+
+      /* Grid com espaçamento proporcional */
+      .content {
+        grid-template-columns: 2fr 1fr;
+        /* Gráfico 2x maior */
+        grid-template-rows: auto 1fr;
+      }
+
+      .kpi-grid {
+        width: 100%;
+      }
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--text-muted);
+      gap: 6px;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-item i {
+      font-size: 1.4rem;
+      transition: transform 0.2s;
+    }
+
+    .tab-item span {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .tab-item.active {
+      color: var(--primary);
+    }
+
+    .tab-item:active {
+      transform: scale(0.9);
+    }
+
+    .tab-item.active i {
+      transform: translateY(-2px);
+      color: var(--secondary);
     }
 
     .section-title {
@@ -314,42 +546,6 @@
       min-height: 250px;
     }
 
-    .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .menu-item {
-      background: var(--card-bg);
-      padding: 25px 15px;
-      border-radius: var(--border-radius);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      box-shadow: var(--card-shadow, 0 4px 15px rgba(0, 0, 0, 0.05));
-      border: var(--card-border, none);
-      text-decoration: none;
-      color: var(--text-primary);
-      backdrop-filter: var(--backdrop-blur, none);
-      transition: 0.3s;
-    }
-
-    .menu-item:active {
-      transform: scale(0.95);
-    }
-
-    .menu-item i {
-      font-size: 2rem;
-      color: var(--primary);
-    }
-
-    .menu-item span {
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
 
     .btn-sync {
       background: var(--primary);
@@ -388,12 +584,71 @@
     }
 
     .modal-content {
-      background: #fff;
+      background: var(--card-bg, #fff);
       padding: 30px;
       border-radius: 24px;
       width: 95%;
       max-width: 400px;
+      max-height: 85vh;
+      overflow-y: auto;
       position: relative;
+    }
+
+    /* Premium styling for detail items - Theme Aware */
+    .detail-item {
+      background: var(--card-bg, #fdf2e9);
+      padding: 15px;
+      border-radius: var(--border-radius, 18px);
+      margin-bottom: 12px;
+      border-left: 5px solid var(--primary, #e67e22);
+      box-shadow: var(--card-shadow, 0 4px 10px rgba(0, 0, 0, 0.03));
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .detail-item:hover {
+      transform: translateX(5px);
+      opacity: 0.95;
+    }
+
+    .detail-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-culto {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary, #2c3e50);
+      flex: 1;
+    }
+
+    .detail-date {
+      background: var(--primary, #e67e22);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    .detail-funcoes {
+      font-size: 0.8rem;
+      color: var(--text-muted, #7f8c8d);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-funcoes i {
+      color: var(--primary, #e67e22);
+      font-size: 0.7rem;
     }
 
     .close-modal {
@@ -542,186 +797,165 @@
     const userData = JSON.parse(localStorage.getItem('user_token') || '{}');
   </script>
 
-  <div class="header-bar">
-    <div class="header-inner">
-      <div class="logo-container">
-        <img src="assets/backgroud.png" style="width:30px; border-radius:8px;">
-      </div>
-      <h2 class="header-title">Louvor CEVD</h2>
-      <div class="header-actions">
-        <i class="fas fa-palette nav-btn" onclick="toggleThemePanel()" title="Trocar Tema"></i>
-        <i class="fas fa-bullhorn nav-btn" onclick="abrirModalAvisoGeral()" title="Mandar Aviso"></i>
-        <i class="fas fa-user-gear nav-btn" onclick="abrirModalPerfil()" title="Meu Perfil"></i>
-        <span style="position:relative; display:inline-block;">
-          <i class="fas fa-bell nav-btn" onclick="abrirNotificacoes()" title="Notificações"></i>
-          <span id="notifBadge" class="notif-badge" style="display:none">0</span>
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <div id="themePanel" class="theme-panel">
-    <h3 style="color: #000000 !important;">Escolha um Tema</h3>
-    <div class="theme-buttons" id="themeButtonsGrid"></div>
-    <button class="apply-btn" onclick="confirmarTema()">USAR ESTE TEMA</button>
-    <p style="font-size: 0.65rem; color: #94a3b8; margin-top: 15px;">Aplicações em tempo real.</p>
-  </div>
-
-  <div class="content">
-    <div class="welcome">
-      Olá, <span id="userName" style="font-weight:700">Músico</span> |
-      <a href="#" onclick="logout()" style="color: #ef4444; font-weight:700; text-decoration:none;">Sair</a>
-    </div>
-
-
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <i class="fas fa-users"></i>
-        <span class="value" id="kpi-membros">0</span>
-        <span class="label">Membros</span>
-      </div>
-      <div class="kpi-card">
-        <i class="fas fa-calendar-star"></i>
-        <div class="label" style="margin-bottom:5px;">Sua Próxima Escala</div>
-        <span class="value" id="kpi-proxima" style="font-size:0.9rem">...</span>
-      </div>
-      <div class="kpi-card">
-        <i class="fas fa-church"></i>
-        <span class="value" id="kpi-cultos">0</span>
-        <span class="label">Cultos</span>
+  <div class="app-container">
+    <div class="header-bar">
+      <div class="header-inner">
+        <div class="logo-container">
+          <img src="assets/backgroud.png" style="width:30px; border-radius:8px;">
+        </div>
+        <h2 class="header-title">Louvor CEVD</h2>
+        <div class="header-actions">
+          <i class="fas fa-palette nav-btn" onclick="toggleThemePanel()" title="Trocar Tema"></i>
+          <i class="fas fa-bullhorn nav-btn" onclick="abrirModalAvisoGeral()" title="Mandar Aviso"></i>
+          <i class="fas fa-user-gear nav-btn" onclick="abrirModalPerfil()" title="Meu Perfil"></i>
+          <span style="position:relative; display:inline-block;">
+            <i class="fas fa-bell nav-btn" onclick="abrirNotificacoes()" title="Notificações"></i>
+            <span id="notifBadge" class="notif-badge" style="display:none">0</span>
+          </span>
+        </div>
       </div>
     </div>
 
-    <div class="chart-card">
-      <div id="dashLoader"><i class="fas fa-sync fa-spin"></i><span> Carregando gráfico...</span></div>
-      <div class="chart-wrapper">
-        <canvas id="escalaChart"></canvas>
-      </div>
-    </div>
-
-    <div class="menu-grid">
-      <a href="MenuEscalas.html" class="menu-item"><i class="fas fa-calendar-check"></i><span>Escalas</span></a>
-      <a href="MenuMusicas.html" class="menu-item"><i class="fas fa-music"></i><span>Músicas</span></a>
-      <a href="Componentes.html" class="menu-item"><i class="fas fa-users-gear"></i><span>Equipe</span></a>
-      <a href="MenuUtilitarios.html" class="menu-item"><i class="fas fa-tools"></i><span>Utilitários</span></a>
-    </div>
-
-    <div id="syncStatus" class="sync-status">
-      <div class="progress-track">
-        <div id="progFill" class="progress-fill"></div>
-      </div>
-      <span id="progText" class="status-text">Sincronizando...</span>
-    </div>
-
-    <button class="btn-sync" onclick="syncAllData()">
-      <i class="fas fa-sync-alt"></i> ATUALIZAR DADOS
+    <!-- Botão de sync para modo paisagem -->
+    <button id="landscapeSyncBtn" class="landscape-sync-btn" onclick="syncAllData()" style="display:none;">
+      <i class="fas fa-sync-alt"></i> ATUALIZAR TUDO
     </button>
 
-    <div style="text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 20px;">
-      <span id="lastUpdateDate">Última atualização: ---</span>
+    <div id="themePanel" class="theme-panel">
+      <h3 style="color: #000000 !important;">Escolha um Tema</h3>
+      <div class="theme-buttons" id="themeButtonsGrid"></div>
+      <button class="apply-btn" onclick="confirmarTema()">USAR ESTE TEMA</button>
+      <p style="font-size: 0.65rem; color: #94a3b8; margin-top: 15px;">Aplicações em tempo real.</p>
     </div>
-  </div>
 
-  <!-- MODALS -->
-  <div id="avisoGeralModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" onclick="fecharModalAvisoGeral()">&times;</span>
-      <h3>Mandar Aviso</h3>
-      <textarea id="textoAvisoGeral" class="premium-input" rows="4"></textarea>
-      <button id="btnEnviarAvisoGeral" class="btn-premium" onclick="enviarAvisoGeral()">ENVIAR</button>
+    <div class="content">
+      <div class="welcome">
+        Olá, <span id="userName" style="font-weight:700">Músico</span> |
+        <a href="#" onclick="logout()" style="color: #ef4444; font-weight:700; text-decoration:none;">Sair</a>
+      </div>
+
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <i class="fas fa-users"></i>
+          <span class="value" id="kpi-membros">0</span>
+          <span class="label">Membros</span>
+        </div>
+        <div class="kpi-card">
+          <i class="fas fa-calendar-star"></i>
+          <div class="label" style="margin-bottom:5px;">Sua Próxima Escala</div>
+          <span class="value" id="kpi-proxima" style="font-size:0.9rem">...</span>
+        </div>
+        <div class="kpi-card">
+          <i class="fas fa-church"></i>
+          <span class="value" id="kpi-cultos">0</span>
+          <span class="label">Cultos</span>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div id="dashLoader"><i class="fas fa-sync fa-spin"></i><span> Carregando gráfico...</span></div>
+        <div class="chart-wrapper">
+          <canvas id="escalaChart"></canvas>
+        </div>
+      </div>
+
+      <nav class="tab-bar">
+        <a href="MenuEscalas.html" class="tab-item">
+          <i class="fas fa-calendar-check"></i>
+          <span>Escalas</span>
+        </a>
+        <a href="MenuMusicas.html" class="tab-item">
+          <i class="fas fa-music"></i>
+          <span>Músicas</span>
+        </a>
+        <a href="Componentes.html" class="tab-item">
+          <i class="fas fa-users-gear"></i>
+          <span>Equipe</span>
+        </a>
+        <a href="MenuUtilitarios.html" class="tab-item">
+          <i class="fas fa-tools"></i>
+          <span>Utilitários</span>
+        </a>
+      </nav>
+
+      <div id="syncStatus" class="sync-status">
+        <div class="progress-track">
+          <div id="progFill" class="progress-fill"></div>
+        </div>
+        <span id="progText" class="status-text">Sincronizando...</span>
+      </div>
+
+      <button class="btn-sync" onclick="syncAllData()">
+        <i class="fas fa-sync-alt"></i> ATUALIZAR DADOS
+      </button>
+
+      <div style="text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 20px;">
+        <span id="lastUpdateDate">Última atualização: ---</span>
+      </div>
     </div>
-  </div>
 
-  <div id="perfilModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" onclick="fecharModalPerfil()">&times;</span>
-      <h3>Meu Perfil</h3>
-      <input type="text" id="editNome" class="premium-input">
-      <input type="password" id="editSenha" class="premium-input" placeholder="Nova senha">
-      <button class="btn-premium" onclick="salvarPerfil()">SALVAR</button>
+    <!-- MODALS -->
+    <div id="avisoGeralModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharModalAvisoGeral()">&times;</span>
+        <h3>Mandar Aviso</h3>
+        <textarea id="textoAvisoGeral" class="premium-input" rows="4"></textarea>
+        <button id="btnEnviarAvisoGeral" class="btn-premium" onclick="enviarAvisoGeral()">ENVIAR</button>
+      </div>
     </div>
-  </div>
 
-  <div id="detailModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" onclick="fecharModal()">&times;</span>
-      <h3 id="modalNome">Detalhes</h3>
-      <div id="modalLista"></div>
+    <div id="perfilModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharModalPerfil()">&times;</span>
+        <h3>Meu Perfil</h3>
+        <input type="text" id="editNome" class="premium-input">
+        <input type="password" id="editSenha" class="premium-input" placeholder="Nova senha">
+        <button class="btn-premium" onclick="salvarPerfil()">SALVAR</button>
+      </div>
     </div>
-  </div>
 
-  <div id="notifModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal" onclick="fecharNotificacoes()">&times;</span>
-      <h3>Notificações</h3>
-      <div id="notifLista"></div>
-      <button onclick="limparNotificacoesLidas()" class="btn-premium" style="margin-top:10px">Limpar Lidas</button>
+    <div id="detailModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharModal()">&times;</span>
+        <h3 id="modalNome">Detalhes</h3>
+        <div id="modalLista"></div>
+      </div>
     </div>
-  </div>
 
-  <script src="index_logic.js"></script>
+    <div id="notifModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="fecharNotificacoes()">&times;</span>
+        <h3>Notificações</h3>
+        <div id="notifLista"></div>
+        <button onclick="limparNotificacoesLidas()" class="btn-premium" style="margin-top:10px">Limpar Lidas</button>
+      </div>
+    </div>
+
+  </div> <!-- end app-container -->
+  <script src="index_logic.js?v=2.9"></script>
 
   <script>
-    let tempThemeId = localStorage.getItem('tema_escolhido_id') || 1;
+    // No local theme scripts needed, uses temas-core.js
 
-    function toggleThemePanel() {
-      const panel = document.getElementById('themePanel');
-      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-      if (panel.style.display === 'block') renderThemeButtons();
-    }
+    // Handle click on landscape sync button (body::before pseudo-element)
+    document.body.addEventListener('click', function (e) {
+      if (window.matchMedia('(orientation: landscape)').matches) {
+        const rect = document.body.getBoundingClientRect();
+        const centerX = window.innerWidth / 2;
+        const buttonTop = 75;
+        const buttonBottom = 95; // Approximate height
+        const buttonLeft = centerX - 60; // Approximate width
+        const buttonRight = centerX + 60;
 
-    function renderThemeButtons() {
-      const grid = document.getElementById('themeButtonsGrid');
-      grid.innerHTML = '';
-      Object.keys(TEMAS_DISPONIVEIS).forEach(id => {
-        const tema = TEMAS_DISPONIVEIS[id];
-        const btn = document.createElement('button');
-        btn.className = 'theme-btn-circ' + (tempThemeId == id ? ' active' : '');
-        btn.style.background = tema.gradient || tema.primary;
-        if (tema.border) btn.style.border = tema.border;
-        btn.onclick = () => {
-          tempThemeId = id;
-          aplicarPreview(id);
-          renderThemeButtons();
-        };
-        grid.appendChild(btn);
-      });
-    }
-
-    function aplicarPreview(id) {
-      const tema = TEMAS_DISPONIVEIS[id];
-      const root = document.documentElement;
-      const color = tema.secondary || tema.primary;
-
-      root.style.setProperty('--primary', tema.primary);
-      root.style.setProperty('--secondary', color);
-      root.style.setProperty('--bg', tema.bg);
-      root.style.setProperty('--bg-override', tema.gradient || tema.bg);
-      root.style.setProperty('--card-bg', tema.cardBg || '#ffffff');
-      root.style.setProperty('--header-bg', tema.headerBg || '#ffffff');
-      root.style.setProperty('--text-primary', tema.text || '#1e293b');
-      root.style.setProperty('--text-muted', tema.textMuted || '#64748b');
-      root.style.setProperty('--border-radius', tema.radius || '25px');
-      root.style.setProperty('--card-shadow', tema.shadow || '0 4px 15px rgba(0,0,0,0.05)');
-      root.style.setProperty('--card-border', tema.border || 'none');
-      root.style.setProperty('--header-text', tema.headerText || tema.text || '#1e293b');
-
-      // Live update chart manually to ensure zero lag
-      if (window.currentChart) {
-        const ctx = document.getElementById('escalaChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, color);
-        gradient.addColorStop(1, color + '33');
-        window.currentChart.data.datasets[0].backgroundColor = gradient;
-        window.currentChart.update('none');
+        if (e.clientY >= buttonTop && e.clientY <= buttonBottom &&
+          e.clientX >= buttonLeft && e.clientX <= buttonRight) {
+          if (typeof syncAllData === 'function') {
+            syncAllData();
+          }
+        }
       }
-    }
-
-    function confirmarTema() {
-      localStorage.setItem('tema_escolhido_id', tempThemeId);
-      toggleThemePanel();
-      if (window.aplicarTemaAtual) aplicarTemaAtual();
-    }
+    });
   </script>
 </body>
 

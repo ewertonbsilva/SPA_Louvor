@@ -3,6 +3,8 @@
  * Permite a troca de temas, persistência e aplicação GLOBAL agressiva.
  */
 
+let tempThemeId = localStorage.getItem('tema_escolhido_id') || 1;
+
 function aplicarTemaAtual() {
     if (typeof TEMAS_DISPONIVEIS === 'undefined') return;
 
@@ -32,8 +34,8 @@ function aplicarTemaAtual() {
 
     Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
 
-    // 2. Aplicar Fundo ao Body (Fallback e Pre-render)
-    document.body.style.backgroundAttachment = "fixed";
+    // 2. Aplicar Fundo ao Body
+    if (document.body) document.body.style.backgroundAttachment = "fixed";
 
     // 3. INJEÇÃO DE ESTILO GLOBAL
     let styleTag = document.getElementById('theme-global-overrides');
@@ -52,14 +54,14 @@ function aplicarTemaAtual() {
         }
         
         .header-bar, .premium-header { 
-            background: var(--header-bg) !important; 
-            backdrop-filter: var(--backdrop-blur) !important;
+            background: var(--glass, var(--header-bg)) !important; 
+            backdrop-filter: blur(12px) !important;
             border-bottom: 1px solid rgba(0,0,0,0.05) !important;
         }
 
         .header-title { color: var(--header-text) !important; }
 
-        .nav-btn, .nav-icons i, .header-actions i {
+        .nav-btn, .nav-icons i, .header-actions i, .header-left-nav i, .header-right-nav i {
             color: var(--header-text) !important;
         }
 
@@ -72,24 +74,10 @@ function aplicarTemaAtual() {
             backdrop-filter: var(--backdrop-blur) !important;
         }
 
-        .menu-item i, .menu-card i, .kpi-card i, .comp-card i {
-            color: var(--primary) !important;
-        }
-
-        .menu-item span, .menu-card span, .kpi-card span, .comp-card span {
-            color: var(--text-primary) !important;
-        }
-
-        .btn-premium, .btn-sync, .apply-btn {
+        .btn-premium, .btn-sync, .apply-btn, .btn-modal-action {
             background: var(--primary) !important;
             border-radius: var(--border-radius) !important;
             color: #ffffff !important;
-        }
-
-        .premium-input {
-            border-radius: 12px !important;
-            background: var(--bg) !important;
-            color: var(--text-primary) !important;
         }
     `;
 
@@ -97,14 +85,64 @@ function aplicarTemaAtual() {
 }
 
 /**
- * Troca o tema globalmente
+ * Funções do Painel de Temas
  */
-function mudarTema(id) {
-    if (typeof TEMAS_DISPONIVEIS === 'undefined' || !TEMAS_DISPONIVEIS[id]) return;
+function toggleThemePanel() {
+    const panel = document.getElementById('themePanel');
+    if (!panel) return;
+    panel.style.display = (panel.style.display === 'block' ? 'none' : 'block');
+    if (panel.style.display === 'block') renderThemeButtons();
+}
+
+function renderThemeButtons() {
+    const grid = document.getElementById('themeButtonsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    Object.keys(TEMAS_DISPONIVEIS).forEach(id => {
+        const tema = TEMAS_DISPONIVEIS[id];
+        const btn = document.createElement('button');
+        btn.className = 'theme-btn-circ' + (tempThemeId == id ? ' active' : '');
+        btn.style.background = tema.gradient || tema.primary;
+        if (tema.border) btn.style.border = tema.border;
+        btn.onclick = () => {
+            tempThemeId = id;
+            aplicarPreview(id);
+            renderThemeButtons();
+        };
+        grid.appendChild(btn);
+    });
+}
+
+function aplicarPreview(id) {
+    const tema = TEMAS_DISPONIVEIS[id];
+    const root = document.documentElement;
+    root.style.setProperty('--primary', tema.primary);
+
+    // Live update chart if on index.html
+    const chartCanvas = document.getElementById('escalaChart');
+    if (chartCanvas && window.currentChart) {
+        const color = tema.secondary || tema.primary;
+        const ctx = chartCanvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, color);
+        gradient.addColorStop(1, color + '33');
+        window.currentChart.data.datasets[0].backgroundColor = gradient;
+        window.currentChart.update('none');
+    }
+
+    // Salva temporariamente para o aplicarTemaAtual usar o ID correto no preview
+    const originalThemeId = localStorage.getItem('tema_escolhido_id');
     localStorage.setItem('tema_escolhido_id', id);
     aplicarTemaAtual();
-    const panel = document.getElementById('themePanel');
-    if (panel) panel.style.display = 'none';
+    // Restaura o ID original (o confirmarTema salvará permanentemente)
+    localStorage.setItem('tema_escolhido_id', originalThemeId);
+}
+
+function confirmarTema() {
+    localStorage.setItem('tema_escolhido_id', tempThemeId);
+    aplicarTemaAtual();
+    toggleThemePanel();
+    // Se estiver no index, pode disparar refresh de componentes se necessário
 }
 
 // Inicialização segura
@@ -113,12 +151,3 @@ if (document.readyState === 'loading') {
 } else {
     aplicarTemaAtual();
 }
-
-// Observer para casos de carregamento dinâmico
-const themeObserver = new MutationObserver(() => {
-    if (document.body) {
-        aplicarTemaAtual();
-        themeObserver.disconnect();
-    }
-});
-themeObserver.observe(document.documentElement, { childList: true });

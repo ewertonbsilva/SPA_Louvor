@@ -270,8 +270,15 @@ function renderizarGrafico(lista) {
     const wrapper = canvas.parentElement;
 
     // Set dynamic height: 30px per member, minimum 250px
-    const dynamicHeight = Math.max(250, lista.length * 40);
-    wrapper.style.height = dynamicHeight + 'px';
+    // BUT: Skip in landscape to prevent infinite resize loop
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    if (!isLandscape) {
+        const dynamicHeight = Math.max(250, lista.length * 40);
+        wrapper.style.height = dynamicHeight + 'px';
+    } else {
+        // In landscape, let flexbox handle it
+        wrapper.style.height = '100%';
+    }
 
     if (currentChart) {
         // UPDATE EXISTING CHART (Silent)
@@ -497,7 +504,7 @@ function processarNotificacoes() {
         if (!hashesConhecidos.has(id)) {
             const matchMeuCulto = scalesMatchForRepertorio(r, escalas, meuNome);
             console.log(`Verificando: ${id}`);
-            console.log(`Match com meu nome (${meuNome})?`, match);
+            console.log(`Match com meu nome (${meuNome})?`, matchMeuCulto);
             if (matchMeuCulto) {
                 notificacoes.unshift({
                     id, type: 'musica', read: false, time: Date.now(),
