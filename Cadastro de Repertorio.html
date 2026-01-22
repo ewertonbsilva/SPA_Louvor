@@ -199,9 +199,13 @@
     <div class="premium-card" style="max-width: 500px; margin: 0 auto; border-top: 8px solid var(--accent-green);">
 
       <form id="repertorioForm">
-        <input type="hidden" name="sheet" value="Repertório">
-        <input type="hidden" name="DataRaw" id="hiddenData">
-        <input type="hidden" name="NomeCulto" id="hiddenNomeCulto">
+        <input type="hidden" name="sheet" value="Repertorio_PWA">
+        <input type="hidden" name="Data" id="hiddenData">
+        <input type="hidden" name="Culto" id="hiddenNomeCulto">
+        <input type="hidden" name="Músicas" id="hiddenMusica">
+        <input type="hidden" name="Cantor" id="hiddenCantor">
+        <!-- Garantir que Tons seja enviado se não selecionado -->
+        <input type="hidden" name="Tons" id="hiddenTons">
 
         <div class="field">
           <label>Escolha o Culto</label>
@@ -215,7 +219,7 @@
 
         <div class="field">
           <label>Música - Cantor</label>
-          <select id="musicaSelect" name="MusicaFull" placeholder="Pesquisar música..." required></select>
+          <select id="musicaSelect" placeholder="Pesquisar música..." required></select>
           <div style="text-align:right; margin-top:5px; font-size:0.85rem">
             <a id="linkAddMusica" href="Cadastro de Musicas.html"
               style="color:var(--accent-green); text-decoration:none; font-weight:600;"><i class="fas fa-plus"></i> Não
@@ -225,7 +229,7 @@
 
         <div class="field">
           <label>Tom / Tonalidade (Opcional)</label>
-          <select id="tomSelect" name="Tom" placeholder="Pesquisar tom...">
+          <select id="tomSelect" name="Tons_Select" placeholder="Pesquisar tom...">
             <option value="">Selecione...</option>
             <option value="C / Am">C / Am</option>
             <option value="C# / A#m">C# / A#m</option>
@@ -247,7 +251,7 @@
       <div id="status" style="margin-top:20px; text-align:center; display:none;"></div>
     </div>
 
-    <script src="config.js"></script>
+    <!-- config.js removed (duplicate) -->
     <script src="sync.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
@@ -257,6 +261,11 @@
       let transformData = [];
 
       function initSelects() {
+        if (tsCulto) tsCulto.destroy();
+        if (tsMinistro) tsMinistro.destroy();
+        if (tsMusica) tsMusica.destroy();
+        if (tsTom) tsTom.destroy();
+
         tsCulto = new TomSelect("#cultoSelect", {
           onChange: (val) => filtrarEscala(val)
         });
@@ -290,13 +299,30 @@
           transformData = transformDataTemp; // Global var usage
 
           // Add Cultos
-          const cultosUnicos = [...new Set(transformData.map(i => i.Cultos))];
-          tsCulto.clearOptions();
-          cultosUnicos.forEach(cNome => {
-            const item = transformData.find(i => i.Cultos === cNome);
-            if (new Date(item.Data) >= hoje) {
-              tsCulto.addOption({ value: cNome, text: cNome });
+          // Gerar lista única baseada em "Nome dos Cultos" + "Data"
+          // Formato da chave para o Select: "Nome|DataOriginal"
+          const cultosMap = new Map();
+
+          transformData.forEach(item => {
+            // Validação para evitar undefined
+            if (!item["Nome dos Cultos"] || !item.Data) return;
+
+            // Chave única composta
+            const uniqueKey = item["Nome dos Cultos"] + "|" + item.Data;
+
+            if (!cultosMap.has(uniqueKey) && new Date(item.Data) >= hoje) {
+              // Formatar para exibição: "Nome (DD/MM)"
+              const d = new Date(item.Data);
+              const dataDisplay = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+              const textDisplay = `${item["Nome dos Cultos"]} (${dataDisplay})`;
+
+              cultosMap.set(uniqueKey, { value: uniqueKey, text: textDisplay });
             }
+          });
+
+          tsCulto.clearOptions();
+          cultosMap.forEach(opt => {
+            tsCulto.addOption(opt);
           });
 
           // LOAD MUSICAS
@@ -349,9 +375,22 @@
         if (!cultoNome) return;
 
         // Localiza a data e nome do culto para os campos ocultos
-        const infoCulto = transformData.find(i => i.Cultos === cultoNome);
+        // A chave agora é "Nome|Data"
+        if (!cultoNome.includes('|')) return;
+
+        const [nomeTarget, dataTarget] = cultoNome.split('|');
+
+        const infoCulto = transformData.find(i =>
+          i["Nome dos Cultos"] === nomeTarget &&
+          i.Data === dataTarget
+        );
+
         if (infoCulto) {
-          document.getElementById('hiddenData').value = infoCulto.Data;
+          // Formatar data YYYY-MM-DD para DD/MM/YYYY
+          const parts = infoCulto.Data.split('T')[0].split('-');
+          const dataBR = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+          document.getElementById('hiddenData').value = dataBR;
           document.getElementById('hiddenNomeCulto').value = infoCulto["Nome dos Cultos"];
         }
 
@@ -359,7 +398,8 @@
         const funcoesPermitidas = ["Ministro", "Back", "Violão"];
 
         const escalados = transformData.filter(item =>
-          item.Cultos === cultoNome &&
+          item["Nome dos Cultos"] === nomeTarget &&
+          item.Data === dataTarget &&
           funcoesPermitidas.includes(item.Função)
         );
 
@@ -374,6 +414,24 @@
 
       document.getElementById('repertorioForm').addEventListener('submit', function (e) {
         e.preventDefault();
+
+        // Split Music - Singer
+        const musicaFull = tsMusica.getValue();
+        if (musicaFull) {
+          const separatorIndex = musicaFull.lastIndexOf(" - ");
+          if (separatorIndex !== -1) {
+            document.getElementById('hiddenMusica').value = musicaFull.substring(0, separatorIndex).trim();
+            document.getElementById('hiddenCantor').value = musicaFull.substring(separatorIndex + 3).trim();
+          } else {
+            document.getElementById('hiddenMusica').value = musicaFull;
+            document.getElementById('hiddenCantor').value = "";
+          }
+        }
+
+        // Handle Tons
+        const tonsVal = tsTom.getValue();
+        document.getElementById('hiddenTons').value = tonsVal;
+
         const btn = document.getElementById('btnSubmit');
         const status = document.getElementById('status');
 
@@ -391,7 +449,7 @@
         });
 
         // 1. Atualiza UI/Cache local imediatamente
-        SyncManager.updateLocalCache("Repertório", "add", data);
+        SyncManager.updateLocalCache("Repertorio_PWA", "add", data);
 
         // 2. Adiciona Ã  fila de sincronizaÃ§Ã£o
         SyncManager.addToQueue(data);

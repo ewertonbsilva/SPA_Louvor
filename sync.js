@@ -28,8 +28,9 @@ const SyncManager = {
         let queue = this.getQueue();
         if (queue.length === 0) return;
 
-        console.log(`Sincronizando ${queue.length} itens...`);
+        console.log(`🔄 Sincronizando ${queue.length} itens...`);
         const item = queue[0];
+        console.log("📡 Enviando payload para o servidor:", item.data);
         try {
             const response = await fetch(APP_CONFIG.SCRIPT_URL, {
                 method: 'POST',
@@ -37,7 +38,10 @@ const SyncManager = {
             });
             const res = await response.json();
 
-            if (res.status === "success") {
+            // Aceitar "success" ou remover item se der erro fatal para não travar a fila
+            if (res.status === "success" || res.status === "error") {
+                if (res.status === "error") console.error("Erro no servidor:", res.message);
+
                 queue.shift();
                 localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue));
                 if (queue.length > 0) {
@@ -46,9 +50,19 @@ const SyncManager = {
                     console.log("Sincronização concluída!");
                     window.dispatchEvent(new CustomEvent('syncCompleted'));
                 }
+            } else {
+                // Resposta desconhecida, remove para destravar fila
+                console.warn("Resposta desconhecida, removendo item da fila:", res);
+                queue.shift();
+                localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue));
             }
         } catch (e) {
-            console.log("Falha na sincronização (conexão instável)");
+            console.log("❌ Falha na sincronização:", e);
+            // Se for erro de sintaxe (JSON invalido do servidor) ou erro de script, remove item
+            if (e.name === "SyntaxError" || (e.message && e.message.includes("Unexpected token"))) {
+                queue.shift();
+                localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue));
+            }
         }
     },
 
@@ -88,7 +102,7 @@ const SyncManager = {
         try {
             const endpoints = [
                 { key: 'offline_escala', sheet: 'Transformar' },
-                { key: 'offline_repertorio', sheet: 'Repertório' },
+                { key: 'offline_repertorio', sheet: 'Repertorio_PWA' },
                 { key: 'offline_musicas', sheet: 'Musicas' },
                 { key: 'offline_lembretes', sheet: 'Lembretes' },
                 { key: 'offline_consagracao', sheet: 'Consagração' },

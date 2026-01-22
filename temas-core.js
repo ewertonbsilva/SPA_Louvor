@@ -3,7 +3,7 @@
  * Permite a troca de temas, persistência e aplicação GLOBAL agressiva.
  */
 
-let tempThemeId = localStorage.getItem('tema_escolhido_id') || 1;
+var tempThemeId = localStorage.getItem('tema_escolhido_id') || 1;
 
 function aplicarTemaAtual() {
     if (typeof TEMAS_DISPONIVEIS === 'undefined') return;

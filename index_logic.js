@@ -747,7 +747,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
 
     const banner = document.getElementById('installBanner');
-    banner.style.display = 'block';
+    if (banner) banner.style.display = 'block';
 
     // Lógica para o botão INSTALAR
     document.getElementById('btnInstall').addEventListener('click', async () => {

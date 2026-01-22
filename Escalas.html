@@ -618,7 +618,7 @@
     <script>
       const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
       const urlEscala = SCRIPT_URL + "?sheet=Transformar";
-      const urlRepertorio = SCRIPT_URL + "?sheet=Repertório";
+      const urlRepertorio = SCRIPT_URL + "?sheet=Repertorio_PWA";
       const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
 
       const iconsMap = {
@@ -630,14 +630,28 @@
         "Bateria": "fa-drum",
         "Baixo": "fa-guitar"
       };
+      function safeParse(jsonString, fallback = []) {
+        try {
+          if (!jsonString || jsonString === "undefined" || jsonString === "null") return fallback;
+          return JSON.parse(jsonString);
+        } catch (e) {
+          console.warn("JSON Parse Error:", e);
+          return fallback;
+        }
+      }
+
       async function loadAll(forceUpdate = false) {
         const loader = document.getElementById('loader');
         const cachedEscala = localStorage.getItem('offline_escala');
         const cachedRepertorio = localStorage.getItem('offline_repertorio');
         const cachedLembretes = localStorage.getItem('offline_lembretes');
 
-        if (!forceUpdate && cachedEscala && cachedRepertorio && cachedLembretes) {
-          renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes));
+        const escalaData = safeParse(cachedEscala);
+        const repertorioData = safeParse(cachedRepertorio);
+        const lembretesData = safeParse(cachedLembretes);
+
+        if (!forceUpdate && escalaData.length > 0) {
+          renderMaster(escalaData, repertorioData, lembretesData);
           setTimeout(() => silentSync(), 500);
           return;
         }
@@ -661,7 +675,8 @@
           renderMaster(escalaJson.data, repertorioJson.data, lembretesJson.data);
           if (forceUpdate) alert("Escalas atualizadas!");
         } catch (e) {
-          if (cachedEscala && cachedRepertorio) renderMaster(JSON.parse(cachedEscala), JSON.parse(cachedRepertorio), JSON.parse(cachedLembretes || '[]'));
+          console.error(e);
+          if (escalaData.length > 0) renderMaster(escalaData, repertorioData, lembretesData);
           else loader.innerText = "Erro ao carregar dados.";
         }
       }
@@ -687,27 +702,34 @@
         } catch (e) { console.log("Silent sync failed"); }
       }
 
-      function renderMaster(escalas, musicas, lembretes = []) {
+      function renderMaster(escalas, musicas = [], lembretes = []) {
         const container = document.getElementById('escala-container');
         container.innerHTML = '';
         const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
         const escalaAgrupada = escalas.reduce((acc, item) => {
-          const dataItem = new Date(item.Data);
+          // Robust Date Parsing
+          let dataItem;
+          if (item.Data && item.Data.includes('T')) {
+            dataItem = new Date(item.Data);
+          } else if (item.Data) {
+            // Fallback for YYYY-MM-DD
+            dataItem = new Date(item.Data + "T12:00:00");
+          } else {
+            return acc;
+          }
+
           if (dataItem >= hoje) {
-            const key = item.Cultos;
-            if (!acc[key]) acc[key] = { info: item, membros: [] };
+            // Nova chave Ãºnica baseada em Nome + Data (jÃ¡ que item.Cultos sumiu)
+            const key = item["Nome dos Cultos"] + "|" + item.Data;
+            if (!acc[key]) acc[key] = { info: item, membros: [], idComposto: key };
             acc[key].membros.push({ nome: item.Nome, funcao: item["Função"] });
           }
           return acc;
         }, {});
 
-        const repertorioAgrupado = musicas.reduce((acc, item) => {
-          const key = item["Culto+Data"];
-          if (!acc[key]) acc[key] = [];
-          acc[key].push(item);
-          return acc;
-        }, {});
+        // Remover agrupamento prévio, vamos filtrar na hora
+        // const repertorioAgrupado = musicas.reduce...
 
         const escalasFiltradas = Object.values(escalaAgrupada).sort((a, b) => new Date(a.info.Data) - new Date(b.info.Data));
 
@@ -717,13 +739,34 @@
         }
 
         escalasFiltradas.forEach(item => {
-          const key = item.info.Cultos;
+          // const key = item.info.Cultos; -> DEPRECATED
+          const key = item.idComposto;
           const dataObj = new Date(item.info.Data);
           // Remove a vÃ­rgula do formato: ex "dom. 18/01"
           const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(',', '');
           const dataAvisoCheck = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
           const dataFullFormatada = dataObj.toLocaleDateString('pt-BR');
-          const musicasDoCulto = repertorioAgrupado[key] || [];
+          // Filtragem mais flexível para encontrar as músicas
+          // Tenta bater a data (YYYY-MM-DD) e se o nome do culto está contido
+          const dataYMD = item.info.Data.split('T')[0]; // ex: 2025-10-22
+          const nomeCulto = item.info["Nome dos Cultos"].toLowerCase().trim();
+
+          const musicasDoCulto = musicas.filter(m => {
+            // Comparar Data (DD/MM/YYYY) e Nome do Culto
+            if (!m.Data || !m.Culto) return false;
+
+            // m.Data vem como DD/MM/YYYY (ex: 25/01/2026)
+            // dataFormatada vem como "dom. 25/01" -> Não serve
+            // item.info.Data vem como YYYY-MM-DDTHH... (ex: 2026-01-25T...)
+
+            const parts = item.info.Data.split('T')[0].split('-'); // [2026, 01, 25]
+            const dataItemBR = `${parts[2]}/${parts[1]}/${parts[0]}`; // 25/01/2026
+
+            const matchData = m.Data === dataItemBR;
+            const matchNome = m.Culto.trim().toLowerCase() === item.info["Nome dos Cultos"].trim().toLowerCase();
+
+            return matchData && matchNome;
+          });
 
           // Filtrar lembretes deste culto especÃ­fico (Aproximado por dd/mm + Nome do Culto)
           const avisosDoCulto = lembretes.filter(l => {
@@ -769,7 +812,7 @@
               <div class="section-title-container">
                 <span class="section-title"><i class="fas fa-users"></i> Equipe</span>
                 ${estouEscalado ? `
-                  <button class="btn-ausencia" onclick="comunicarAusencia('${item.info.Cultos}', event)" title="Comunicar Aviso">
+                  <button class="btn-ausencia" onclick="comunicarAusencia('${item.info["Nome dos Cultos"]} (${dataFormatada})', event)" title="Comunicar Aviso">
                     <i class="fas fa-bell"></i> Avisos
                   </button>
                 ` : ''}
@@ -799,6 +842,11 @@
                            onclick="excluirAviso('${a.id_Lembrete}', event)" 
                            style="position:absolute; right:8px; top:8px; color:#e74c3c; cursor:pointer; font-size:0.7rem;"
                            title="Remover Aviso"></i>
+                      ` : (isAdmin || (userToken.Login && a.Componente.toLowerCase().trim() === userToken.Login.toLowerCase().trim())) ? `
+                        <i class="fas fa-trash-alt" 
+                           onclick="excluirAviso('${a.id_Lembrete}', event)" 
+                           style="position:absolute; right:8px; top:8px; color:#e74c3c; cursor:pointer; font-size:0.7rem;"
+                           title="Remover Aviso (Admin)"></i>
                       ` : ''}
                     </div>
                   `).join('')}
@@ -840,7 +888,7 @@
                         <a href="https://www.letras.mus.br/?q=${queryBusca}" target="_blank" class="l-lt" title="Letras.mus"><i class="fas fa-align-left"></i></a>
                       </div>
                     </div>
-                    <button class="btn-del-musica" onclick="excluirMusica('${m.Músicas.replace(/'/g, "\\'")}', '${key}', '${m.Cantor.replace(/'/g, "\\'")}')" title="Excluir">
+                    <button class="btn-del-musica" onclick="excluirMusica('${m.Músicas.replace(/'/g, "\\'")}', '${m.Culto.replace(/'/g, "\\'")}|${m.Data}', '${m.Cantor.replace(/'/g, "\\'")}')" title="Excluir">
                       <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>`;
@@ -977,9 +1025,18 @@
       async function excluirMusica(musica, cultoData, cantor) {
         if (!confirm(`Deseja remover "${musica}"?`)) return;
         try {
+          // Passar os campos corretos para exclusÃ£o: MÃºsicas, Culto, Data
+          const payload = {
+            action: "delete",
+            sheet: "Repertorio_PWA",
+            Músicas: musica,
+            Culto: cultoData.split('|')[0], // Hack: Usaremos separador na chamada
+            Data: cultoData.split('|')[1]
+          };
+
           const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: "delete", sheet: "Repertório", musica: musica, culto: cultoData, cantor: cantor })
+            body: JSON.stringify(payload)
           });
           const res = await response.json();
           if (res.status === "success") { alert("Removido!"); loadAll(true); }
