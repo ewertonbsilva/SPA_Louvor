@@ -48,9 +48,15 @@ async function loadAll(force = false) {
         renderMaster(eData, rData, lData);
         if (btnIcon) btnIcon.classList.remove('fa-spin');
         if (loader) loader.style.display = 'none';
+        
+        // Toast de sucesso apenas quando for sincronização manual (force = true)
+        if (force) {
+            showToast("Escalas sincronizadas com sucesso!", 'success');
+        }
     } catch (e) {
         console.error(e);
         loader.innerText = "Erro ao carregar dados.";
+        showToast("Erro ao sincronizar escalas.", 'error');
     }
 }
 

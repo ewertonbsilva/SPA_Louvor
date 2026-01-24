@@ -71,8 +71,16 @@ async function fetchData(silent = false) {
             .then(json => localStorage.setItem('offline_chamada', JSON.stringify(json.data || [])))
             .catch(e => console.warn("Cache background fail", e));
 
+        // Toast de sucesso apenas quando não for silencioso
+        if (!silent) {
+            showToast("Chamada sincronizada com sucesso!", 'success');
+        }
+
     } catch (e) {
         console.error("Fetch Error:", e);
+        if (!silent) {
+            showToast("Erro ao sincronizar chamada.", 'error');
+        }
     } finally {
         if (btnIcon) btnIcon.classList.remove('fa-spin');
     }

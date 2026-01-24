@@ -24,6 +24,11 @@ async function loadData(force = false) {
         localStorage.setItem('offline_musicas', JSON.stringify(json.data));
         renderAccordion(json.data);
         if (loader) loader.style.display = 'none';
+        
+        // Toast de sucesso apenas quando for sincronização manual (force = true)
+        if (force) {
+            showToast("Músicas sincronizadas com sucesso!", 'success');
+        }
     } catch (e) {
         if (loader) {
             loader.innerText = "Erro ao conectar.";
@@ -66,7 +71,7 @@ function renderAccordion(data) {
         const temaSection = document.createElement('div');
         temaSection.className = 'tema-section';
         temaSection.innerHTML = `
-  <div class="tema-header" onclick="toggle(this.parentElement)">
+  <div class="tema-header" onclick="this.parentElement.classList.toggle('open')">
     <span><i class="fas fa-folder"></i> ${tema}</span>
     <i class="fas fa-chevron-down arrow"></i>
   </div>
@@ -79,7 +84,7 @@ function renderAccordion(data) {
             const estiloSection = document.createElement('div');
             estiloSection.className = 'estilo-section';
             estiloSection.innerHTML = `
-    <div class="estilo-header" onclick="toggle(this.parentElement)">
+    <div class="estilo-header" onclick="this.parentElement.classList.toggle('open')">
       <span>${estilo}</span>
       <i class="fas fa-chevron-down arrow"></i>
     </div>
@@ -99,7 +104,7 @@ function renderAccordion(data) {
                 const linkLT = `https://www.letras.mus.br/?q=${query}`;
 
                 const card = document.createElement('div');
-                card.className = 'premium-card';
+                card.className = 'premium-card music-card';
                 card.style.padding = '15px';
                 card.style.position = 'relative';
                 card.setAttribute('data-search', `${m.Músicas} ${m.Cantor}`.toLowerCase());
@@ -173,12 +178,12 @@ async function excluirDaBiblioteca(musica, cantor) {
     }
 }
 
-function toggle(el) { el.classList.toggle('open'); }
-
 function filterMusics() {
     const q = document.getElementById('searchInput').value.toLowerCase();
+    console.log('Filtrando músicas por:', q); // Debug
     const cards = document.querySelectorAll('.music-card');
     const sections = document.querySelectorAll('.tema-section, .estilo-section');
+    console.log('Cards encontrados:', cards.length); // Debug
 
     if (q === "") {
         sections.forEach(s => { s.classList.remove('open', 'hidden'); });

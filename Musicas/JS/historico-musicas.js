@@ -20,6 +20,11 @@ async function loadData(force = false) {
     localStorage.setItem('offline_historico', JSON.stringify(json.data));
     renderHistory(json.data);
     if (loader) loader.style.display = 'none';
+    
+    // Toast de sucesso apenas quando for sincronização manual (force = true)
+    if (force) {
+      showToast("Histórico sincronizado com sucesso!", 'success');
+    }
   } catch (e) {
     if (cached) renderHistory(JSON.parse(cached));
     else loader.innerText = "Erro ao carregar dados.";
@@ -57,30 +62,47 @@ function renderHistory(data) {
     return acc;
   }, {});
 
-  // Agrupar: Cantor -> Tema -> Estilo
+  // Agrupar: Ministro -> Tema -> Estilo
   const grouped = data.reduce((acc, item) => {
-    const cantor = item.Cantor || "Não Informado";
-    const nomeMusica = (item.Músicas || item["Músicas"] || "").trim();
-    const info = musicMap[`${nomeMusica} - ${cantor}`.toLowerCase()] || { tema: "Geral", estilo: "Outros" };
+    const ministro = item.Ministro || "Não Informado";
+    
+    // Processar coluna B: "Música - Cantor"
+    const musicaCantor = (item["Música - Cantor"] || item["Músicas"] || "").trim();
+    const partes = musicaCantor.split(' - ');
+    const nomeMusica = partes[0] || "Sem Nome";
+    const cantorOriginal = partes[1] || "Não Informado";
+    
+    const searchKey = `${nomeMusica} - ${cantorOriginal}`.toLowerCase();
+    const info = musicMap[searchKey] || { tema: "Geral", estilo: "Outros" };
+    
+    // Debug: mostrar quando não encontra correspondência
+    if (!musicMap[searchKey]) {
+      console.log('Não encontrado:', searchKey);
+    }
 
     const tema = info.tema;
     const estilo = info.estilo;
 
-    if (!acc[cantor]) acc[cantor] = {};
-    if (!acc[cantor][tema]) acc[cantor][tema] = {};
-    if (!acc[cantor][tema][estilo]) acc[cantor][tema][estilo] = [];
+    if (!acc[ministro]) acc[ministro] = {};
+    if (!acc[ministro][tema]) acc[ministro][tema] = {};
+    if (!acc[ministro][tema][estilo]) acc[ministro][tema][estilo] = [];
 
-    acc[cantor][tema][estilo].push({ ...item, musicName: nomeMusica });
+    acc[ministro][tema][estilo].push({ 
+      ...item, 
+      musicName: nomeMusica,
+      cantorOriginal: cantorOriginal,
+      tom: item.Tom || item.Tons || '--'
+    });
     return acc;
   }, {});
 
   // Gerar HTML
-  for (const cantor in grouped) {
-    const sectionCantor = document.createElement('div');
-    sectionCantor.className = 'cantor-section';
+  for (const ministro in grouped) {
+    const sectionMinistro = document.createElement('div');
+    sectionMinistro.className = 'cantor-section';
 
     let temasHtml = '';
-    const temas = grouped[cantor];
+    const temas = grouped[ministro];
 
     for (const tema in temas) {
       let estilosHtml = '';
@@ -91,7 +113,7 @@ function renderHistory(data) {
         estilosHtml += `
           <div class="estilo-section">
             <div class="estilo-header" onclick="this.parentElement.classList.toggle('open')">
-              <h4><i class="fas ${estilo === 'Adoração' ? 'fa-hands-praying' : (estilo === 'Celebração' ? 'fa-face-laugh-beam' : 'fa-tag')}"></i> ${estilo} <span class="count">${musicas.length}</span></h4>
+              <span><i class="fas ${estilo === 'Adoração' ? 'fa-hands-praying' : (estilo === 'Celebração' ? 'fa-face-laugh-beam' : 'fa-tag')}"></i> ${estilo} <span class="count">${musicas.length}</span></span>
               <i class="fas fa-chevron-down arrow"></i>
             </div>
             <div class="estilo-content">
@@ -99,9 +121,9 @@ function renderHistory(data) {
                 ${musicas.map(m => {
           const displayMusic = m.musicName || "Sem Nome";
           return `
-                    <div class="music-item" data-search="${cantor.toLowerCase()} ${tema.toLowerCase()} ${estilo.toLowerCase()} ${displayMusic.toLowerCase()}">
+                    <div class="music-item" data-search="${ministro.toLowerCase()} ${tema.toLowerCase()} ${estilo.toLowerCase()} ${displayMusic.toLowerCase()} ${m.cantorOriginal.toLowerCase()}">
                       <span class="music-name">${displayMusic}</span>
-                      <span class="music-ton">${m.Tons || '--'}</span>
+                      <span class="music-ton">${m.tom || '--'}</span>
                     </div>
                   `}).join('')}
               </div>
@@ -113,7 +135,7 @@ function renderHistory(data) {
       temasHtml += `
         <div class="tema-section">
           <div class="tema-header" onclick="this.parentElement.classList.toggle('open')">
-            <h3><i class="fas fa-folder"></i> ${tema}</h3>
+            <span><i class="fas fa-folder"></i> ${tema}</span>
             <i class="fas fa-chevron-down arrow"></i>
           </div>
           <div class="tema-content">
@@ -123,18 +145,16 @@ function renderHistory(data) {
       `;
     }
 
-    sectionCantor.innerHTML = `
+    sectionMinistro.innerHTML = `
       <div class="cantor-header" onclick="this.parentElement.classList.toggle('open')">
-        <h2>
-          <i class="fas fa-user-circle"></i> ${cantor}
-        </h2>
+        <span><i class="fas fa-user-circle"></i> ${ministro}</span>
         <i class="fas fa-chevron-down arrow"></i>
       </div>
       <div class="cantor-content">
         ${temasHtml}
       </div>
     `;
-    container.appendChild(sectionCantor);
+    container.appendChild(sectionMinistro);
   }
 }
 

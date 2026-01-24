@@ -52,9 +52,17 @@ async function loadData(force = false) {
         renderCalendars();
         container.style.display = 'flex';
         btnExport.style.display = 'flex';
+        
+        // Toast de sucesso apenas quando for sincronização manual (force = true)
+        if (force) {
+            showToast("Calendário sincronizado com sucesso!", 'success');
+        }
     } catch (e) {
         console.error("Erro ao carregar dados:", e);
-        if (!cachedE) alert("Erro ao conectar com o servidor.");
+        if (!cachedE) {
+            alert("Erro ao conectar com o servidor.");
+            showToast("Erro ao sincronizar calendário.", 'error');
+        }
     } finally {
         if (btnIcon) btnIcon.classList.remove('fa-spin');
         if (loader) loader.style.display = 'none';

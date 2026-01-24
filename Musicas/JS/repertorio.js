@@ -19,6 +19,11 @@ async function carregarRepertorio(force = false) {
         localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
         render(json.data);
         if (loader) loader.style.display = 'none';
+        
+        // Toast de sucesso apenas quando for sincronização manual (force = true)
+        if (force) {
+            showToast("Repertório sincronizado com sucesso!", 'success');
+        }
     } catch (e) {
         if (cached) render(JSON.parse(cached));
         else {

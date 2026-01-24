@@ -19,8 +19,16 @@ async function loadTemas(force = false) {
             const json = await response.json();
             data = json.data;
             localStorage.setItem('offline_temas', JSON.stringify(data));
+            
+            // Toast de sucesso apenas quando for sincronização manual
+            if (force) {
+                showToast("Temas sincronizados com sucesso!", 'success');
+            }
         } catch (e) {
             console.error("Erro ao carregar temas:", e);
+            if (force) {
+                showToast("Erro ao sincronizar temas.", 'error');
+            }
         }
     }
 
