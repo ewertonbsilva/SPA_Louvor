@@ -18,6 +18,10 @@ async function syncAllData() {
     const progFill = document.getElementById('progFill');
     const progText = document.getElementById('progText');
 
+    // Adiciona classe 'syncing' aos botões para animação
+    const syncButtons = document.querySelectorAll('.btn-sync, #landscapeSyncBtn');
+    syncButtons.forEach(btn => btn.classList.add('syncing'));
+
     statusBox.style.display = 'block';
 
     const updateProgress = (pct, text) => {
@@ -29,11 +33,17 @@ async function syncAllData() {
         await performFetches(updateProgress);
         updateProgress(100, "Dados Atualizados!");
         initDashboard(); // Atualiza o gráfico após o sync manual
-        setTimeout(() => { statusBox.style.display = 'none'; }, 1000);
+        setTimeout(() => {
+            statusBox.style.display = 'none';
+            syncButtons.forEach(btn => btn.classList.remove('syncing'));
+        }, 1000);
     } catch (e) {
         console.error(e);
         updateProgress(0, "Erro ao conectar.");
-        setTimeout(() => { statusBox.style.display = 'none'; }, 2000);
+        setTimeout(() => {
+            statusBox.style.display = 'none';
+            syncButtons.forEach(btn => btn.classList.remove('syncing'));
+        }, 2000);
     }
 }
 

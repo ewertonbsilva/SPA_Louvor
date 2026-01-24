@@ -14,24 +14,21 @@ async function loadData(force = false) {
     }
 
     // Se for forÃ§ado (botÃ£o) ou nÃ£o tiver cache, mostra loader
-    const btnIcon = document.querySelector('.btn-update i');
-    if (btnIcon) btnIcon.classList.add('spin');
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt, .btn-update i');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
 
-    loader.style.display = 'block';
-    loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando...';
-
+    // ... existing logic ...
     try {
         const response = await fetch(urlGet);
         const json = await response.json();
         localStorage.setItem('offline_musicas', JSON.stringify(json.data));
         renderAccordion(json.data);
-        loader.style.display = 'none';
-        if (force) alert("Lista de músicas atualizada!");
+        if (loader) loader.style.display = 'none';
     } catch (e) {
-        loader.innerText = "Erro ao conectar.";
+        if (loader) loader.innerText = "Erro ao conectar.";
         if (cached) renderAccordion(JSON.parse(cached));
     } finally {
-        if (btnIcon) btnIcon.classList.remove('spin');
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
 }
 
@@ -127,7 +124,12 @@ function renderAccordion(data) {
 }
 
 async function excluirDaBiblioteca(musica, cantor) {
-    if (!confirm(`Deseja remover "${musica}" da biblioteca permanentemente?`)) return;
+    const confirmed = await showConfirmModal(
+        `Deseja remover "${musica}" da biblioteca permanentemente?`,
+        "Remover",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
     // Encontrar o cartão da música para dar feedback visual imediato
     const cards = document.querySelectorAll('.music-card');

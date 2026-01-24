@@ -24,10 +24,11 @@ async function iniciar(force = false) {
         return;
     }
 
-    const btnIcon = document.querySelector('.btn-update i');
-    if (btnIcon) btnIcon.classList.add('spin');
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt') || document.querySelector('.header-right i.fa-sync-alt') || document.querySelector('.btn-update i');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
 
-    if (loader) loader.style.display = 'block';
+    // Silenciado: Loader removido para usar apenas ícone girando no header
+    // if (loader) loader.style.display = 'block';
     try {
         const [resComp, resImg] = await Promise.all([
             fetch(SCRIPT_URL + "?sheet=Componentes"),
@@ -56,9 +57,9 @@ async function iniciar(force = false) {
         renderizar(ativos);
     } catch (e) {
         console.error(e);
-        if (loader) loader.innerText = "Erro ao carregar dados.";
+        if (loader) loader.style.display = 'none';
     } finally {
-        if (btnIcon) btnIcon.classList.remove('spin');
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
 }
 
@@ -317,21 +318,27 @@ function renderizar(lista) {
             return nomeFotoNorm === nomeMembroNorm;
         });
 
-        const urlFallback = fotoObj ? fotoObj.url : `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeLimpo)}&background=random&color=fff&size=200`;
+        const urlDrive = fotoObj ? fotoObj.url : null;
+        const avatarPlaceholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeLimpo)}&background=random&color=fff&size=200`;
 
-        // Dispara o "download" para o cache em background se for link externo
-        if (fotoObj && !urlLocal.includes('assets/equipe')) {
-            cacheImage(fotoObj.url, nomeLimpo);
+        // Lógica de Silenciamento de Erros (Evita speculative 404)
+        // Só tenta o local se for um arquivo que sabemos que existe ou se testarmos silenciosamente
+        // Para este app, vamos usar o Drive/Fallback primeiro se não houver confirmação de arquivo local
+        const finalImgSrc = urlDrive || avatarPlaceholder;
+
+        // Dispara o download/cache silencioso em background
+        if (urlDrive) {
+            cacheImage(urlDrive, nomeLimpo);
         }
 
         return `
-  <div class="premium-card text-center" style="padding: 20px 10px; cursor: pointer;" onclick="abrirDetalhes('${nomeLimpo}', '${urlLocal}', '${item.Função}', '${item["Tel sem Espaço"]}', '${item.Whatsapp?.link || '#'}', '${urlFallback}')">
+  <div class="premium-card text-center" style="padding: 20px 10px; cursor: pointer;" onclick="abrirDetalhes('${nomeLimpo}', '${finalImgSrc}', '${item.Função}', '${item["Tel sem Espaço"]}', '${item.Whatsapp?.link || '#'}', '${avatarPlaceholder}')">
     <div class="avatar-wrapper">
-      <img src="${urlLocal}" class="avatar" 
-           onerror="this.onerror=null; this.src='${urlFallback}';"
+      <img src="${finalImgSrc}" class="avatar" 
+           onerror="this.onerror=null; this.src='${avatarPlaceholder}';"
            onclick="abrirFotoExpandida(this.src, event)" 
            title="Clique para ampliar" 
-           style="width: 70px; height: 70px; border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+           style="width: 70px; height: 70px; border-radius: 50% !important; border: 2px solid var(--primary); box-shadow: var(--card-shadow); background: var(--card-bg); object-fit: cover;">
     </div>
     <div class="comp-name font-heading" style="font-size: 0.95rem; margin-top: 5px;">${nomeLimpo}</div>
     <div class="comp-role" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">${item.Função || item["FunÃ§Ã£o"]}</div>

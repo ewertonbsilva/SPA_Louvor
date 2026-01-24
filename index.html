@@ -270,7 +270,47 @@
       font-size: 0.95rem;
       text-align: left;
       font-weight: 500;
-      margin-top: 20px;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .welcome-text {
+      flex: 1;
+    }
+
+    .welcome .btn-sync {
+      margin-left: auto;
+    }
+
+    /* Animação de rotação para o ícone de sync */
+    .btn-sync.syncing .fa-sync-alt,
+    #landscapeSyncBtn.syncing .fa-sync-alt {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* MODO RETRATO: Botão alinhado à direita */
+    @media (orientation: portrait) {
+      .welcome {
+        justify-content: space-between;
+      }
+
+      .welcome .btn-sync {
+        display: inline-block !important;
+      }
     }
 
     /* BARRA DE NAVEGAÇÃO RESPONSIVA */
@@ -325,11 +365,10 @@
 
       .content {
         margin-left: 80px;
-        margin-top: 35px;
-        /* Space for sync button */
+        margin-top: 0;
         max-width: none;
-        height: calc(100vh - 105px);
-        /* 70px header + 35px button space */
+        height: calc(100vh - 70px);
+        /* 70px header */
         display: grid;
         grid-template-columns: 2fr 1fr;
         grid-template-rows: auto 1fr;
@@ -346,6 +385,14 @@
         font-size: 0.7rem;
         position: relative;
         z-index: 10;
+        justify-content: space-between;
+        text-align: left;
+      }
+
+      /* Mostrar botão da welcome div no modo paisagem, alinhado à direita */
+      .welcome .btn-sync {
+        display: inline-block !important;
+        margin-left: auto;
       }
 
       .chart-card {
@@ -360,6 +407,7 @@
         display: flex;
         flex-direction: column;
         padding: 8px;
+        padding-bottom: 10px;
         overflow: hidden;
         /* Critical: prevents infinite growth */
       }
@@ -392,6 +440,7 @@
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        padding-bottom: 10px;
       }
 
       .kpi-card {
@@ -403,36 +452,11 @@
         padding: 8px;
       }
 
-      /* Esconder elementos menos críticos na paisagem para focar no conteúdo */
-      .btn-sync,
+      /* Esconder botão separado de sync no modo paisagem */
+      #landscapeSyncBtn,
       .sync-status,
       #lastUpdateDate {
-        display: none;
-      }
-
-      /* Mostrar botão real de sync no header em paisagem */
-      #landscapeSyncBtn {
-        display: block !important;
-        position: fixed;
-        top: 75px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1001;
-        background: var(--primary);
-        color: white;
-        padding: 8px 20px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        font-family: 'Outfit', sans-serif;
-        transition: transform 0.2s;
-      }
-
-      #landscapeSyncBtn:active {
-        transform: translateX(-50%) scale(0.95);
+        display: none !important;
       }
 
       /* Grid com espaçamento proporcional */
@@ -821,7 +845,7 @@
 
     <!-- Botão de sync para modo paisagem -->
     <button id="landscapeSyncBtn" class="landscape-sync-btn" onclick="syncAllData()" style="display:none;">
-      <i class="fas fa-sync-alt"></i> ATUALIZAR TUDO
+      <i class="fas fa-sync-alt"></i>
     </button>
 
     <div id="themePanel" class="theme-panel">
@@ -833,8 +857,14 @@
 
     <div class="content">
       <div class="welcome">
-        Olá, <span id="userName" style="font-weight:700">Músico</span> |
-        <a href="#" onclick="logout()" style="color: #ef4444; font-weight:700; text-decoration:none;">Sair</a>
+        <span class="welcome-text">
+          Olá, <span id="userName" style="font-weight:700">Músico</span> |
+          <a href="#" onclick="logout()" style="color: #ef4444; font-weight:700; text-decoration:none;">Sair</a>
+        </span>
+        <button class="btn-sync" onclick="syncAllData()"
+          style="display: inline-block; width: auto; padding: 8px 16px; margin: 0; font-size: 0.75rem;">
+          <i class="fas fa-sync-alt"></i>
+        </button>
       </div>
 
 
@@ -889,7 +919,7 @@
         <span id="progText" class="status-text">Sincronizando...</span>
       </div>
 
-      <button class="btn-sync" onclick="syncAllData()">
+      <button class="btn-sync" onclick="syncAllData()" style="display: none;">
         <i class="fas fa-sync-alt"></i> ATUALIZAR DADOS
       </button>
 

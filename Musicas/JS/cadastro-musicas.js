@@ -2,15 +2,19 @@ const SCRIPT_URL = APP_CONFIG.SCRIPT_URL;
 let tsTema, tsEstilo;
 
 // 1. Carregar os temas da aba "Tema Músicas" ao abrir a página
-async function loadTemas() {
+async function loadTemas(force = false) {
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
+
     const select = document.getElementById('temaSelect');
     const cached = localStorage.getItem('offline_temas');
     let data = [];
 
-    if (cached) {
+    if (!force && cached) {
         data = JSON.parse(cached);
     } else {
         try {
+            if (force) await new Promise(r => setTimeout(r, 500)); // Garantir que o usuário veja o giro
             const response = await fetch(SCRIPT_URL + "?sheet=" + encodeURIComponent("Tema Músicas"));
             const json = await response.json();
             data = json.data;
@@ -40,6 +44,8 @@ async function loadTemas() {
         placeholder: "Selecione o estilo...",
         create: false
     });
+
+    if (btnIcon) btnIcon.classList.remove('fa-spin');
 }
 
 // Auxiliar de Formatação
@@ -102,7 +108,6 @@ document.getElementById('musicForm').addEventListener('submit', function (e) {
     const isModal = document.body.classList.contains('is-modal') || new URLSearchParams(window.location.search).get('modal') === 'true';
 
     if (isModal) {
-        status.innerText += " Retornando ao repertório...";
         setTimeout(() => {
             handleBack();
         }, 1200);

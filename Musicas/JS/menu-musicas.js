@@ -12,6 +12,9 @@ function loadStats(force = false) {
 }
 
 async function fetchStats() {
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
+
     const loader = document.getElementById('loader');
     // Only show loader if chart is not yet rendered
     if (loader && !chartMaisTocadas) loader.style.display = 'block';
@@ -30,6 +33,9 @@ async function fetchStats() {
         if (loader) loader.style.display = 'none';
     } catch (e) {
         if (loader) loader.innerText = "Erro ao carregar dados.";
+    } finally {
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+        if (loader) loader.style.display = 'none';
     }
 }
 

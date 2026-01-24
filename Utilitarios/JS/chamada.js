@@ -32,6 +32,8 @@ async function init() {
 }
 
 async function fetchData(silent = false) {
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
     try {
         // Eventos do Cache
         const cachedEvents = localStorage.getItem('offline_consagracao');
@@ -71,6 +73,8 @@ async function fetchData(silent = false) {
 
     } catch (e) {
         console.error("Fetch Error:", e);
+    } finally {
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
     }
 }
 
@@ -171,7 +175,9 @@ function renderComponents() {
             return nomeFotoNorm === nomeMembroNorm;
         });
 
-        const urlDrive = fotoObj ? fotoObj.url : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+        const urlDrive = fotoObj ? fotoObj.url : null;
+        const avatarPlaceholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+        const finalImgSrc = urlDrive || avatarPlaceholder;
 
         const status = attendanceData[name].status;
         if (status === 'PRESENTE') p++; else if (status === 'JUSTIFICADO') j++; else a++;

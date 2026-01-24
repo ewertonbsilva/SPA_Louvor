@@ -10,25 +10,27 @@ async function carregarRepertorio(force = false) {
         return;
     }
 
-    loader.style.display = 'block';
-    loader.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
 
     try {
-        const response = await fetch(APP_CONFIG.SCRIPT_URL + "?sheet=Repertório");
+        const response = await fetch(APP_CONFIG.SCRIPT_URL + "?sheet=Repertório_PWA");
         const json = await response.json();
         localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
         render(json.data);
-        loader.style.display = 'none';
-        if (force) alert("Atualizado!");
+        if (loader) loader.style.display = 'none';
     } catch (e) {
         if (cached) render(JSON.parse(cached));
         else container.innerHTML = '<div class="loading">Erro ao carregar dados.</div>';
+    } finally {
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+        if (loader) loader.style.display = 'none';
     }
 }
 
 async function silentSync() {
     try {
-        const response = await fetch(APP_CONFIG.SCRIPT_URL + "?sheet=Repertório");
+        const response = await fetch(APP_CONFIG.SCRIPT_URL + "?sheet=Repertório_PWA");
         const json = await response.json();
         localStorage.setItem('offline_repertorio', JSON.stringify(json.data));
 
@@ -70,9 +72,11 @@ function render(data) {
         const section = document.createElement('div');
         section.className = 'culto-group';
 
-        // Forma segura de armazenar os dados para o botÃ£o Add All
+        // Forma segura de armazenar os dados para o botão Add All (igual escalas.js)
         section.dataset.musicas = JSON.stringify(grupo.musicas.map(m => ({
-            musica: m.Músicas, cantor: m.Cantor, tom: m.Tons
+            musicaCantor: `${m.Músicas} - ${m.Cantor}`,
+            ministro: m.Ministro || "Líder não definido",
+            tom: m.Tons || "--"
         })));
 
         section.innerHTML = `
@@ -91,14 +95,14 @@ function render(data) {
         <div class="culto-body">
           ${grupo.musicas.map(m => `
             <div class="musica-item">
-              <div class="m-nome">${m.Músicas}</div>
+              <div class="m-nome">${m.Músicas} - ${m.Cantor}</div>
               <div class="m-tom"><span>${m.Tons || '--'}</span></div>
-              <div class="m-cantor"><i class="fas fa-user"></i> ${m.Cantor}</div>
+              <div class="m-ministro"><i class="fas fa-user"></i> ${m.Ministro}</div>
               <div class="actions">
-                <button class="btn-action btn-history" onclick="addHistorico(this, '${m.Músicas.replace(/'/g, "\\'")}', '${m.Cantor.replace(/'/g, "\\'")}', '${m.Tons}')">
+                <button class="btn-action btn-history" onclick="addHistorico(this, '${m.Músicas.replace(/'/g, "\\'")}', '${m.Cantor.replace(/'/g, "\\'")}', '${m.Tons || "--"}', '${m.Ministro || "Líder não definido"}')">
                   <i class="fas fa-bookmark"></i>
                 </button>
-                <button class="btn-action btn-delete" onclick="excluir('${m.Músicas.replace(/'/g, "\\'")}', '${chave}', '${m.Cantor.replace(/'/g, "\\'")}')">
+                <button class="btn-action btn-delete" onclick="excluir('${m.Músicas.replace(/'/g, "\\'")}', '${grupo.nome.replace(/'/g, "\\'")}|${grupo.dataFull}', '${m.Cantor.replace(/'/g, "\\'")}')">  
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
@@ -120,12 +124,17 @@ function toggleAccordion(el) {
     el.closest('.culto-group').classList.toggle('active');
 }
 
-async function addHistorico(btn, musica, cantor, tom) {
+async function addHistorico(btn, musica, cantor, tom, ministro) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     try {
         const res = await fetch(APP_CONFIG.SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: "addHistory", musica, cantor, tom })
+            body: JSON.stringify({
+                action: "addHistory",
+                musicaCantor: `${musica} - ${cantor}`,
+                ministro: ministro || "Líder não definido",
+                tom: tom || "--"
+            })
         });
         const dados = await res.json();
         if (dados.status === "success") {
@@ -139,7 +148,13 @@ async function addHistorico(btn, musica, cantor, tom) {
 }
 
 async function addBulkHistorico(btn, jsonStr) {
-    if (!confirm("Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)")) return;
+    const confirmed = await showConfirmModal(
+        "Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)",
+        "Adicionar",
+        "Cancelar"
+    );
+    if (!confirmed) return;
+
     const lista = JSON.parse(jsonStr);
     const original = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -159,15 +174,29 @@ async function addBulkHistorico(btn, jsonStr) {
 }
 
 async function excluir(musica, culto, cantor) {
-    if (!confirm("Deseja realmente excluir esta música do repertório?")) return;
+    const confirmed = await showConfirmModal(
+        "Deseja realmente excluir esta música do repertório?",
+        "Excluir",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
-    const payload = { action: "delete", sheet: "Repertório", musica, culto, cantor };
+    // culto vem como "Nome do Culto|Data"
+    const [nomeCulto, dataISO] = culto.split('|');
+
+    const payload = {
+        action: "delete",
+        sheet: "Repertório_PWA",
+        Músicas: musica,
+        Culto: nomeCulto,
+        Data: dataISO
+    };
 
     // 1. Atualiza UI imediatamente (Otimismo)
-    SyncManager.updateLocalCache("Repertório", "delete", payload);
+    SyncManager.updateLocalCache("Repertório_PWA", "delete", payload);
     render(JSON.parse(localStorage.getItem('offline_repertorio')));
 
-    // 2. Adiciona Ã  fila de sincronizaÃ§Ã£o
+    // 2. Adiciona à fila de sincronização
     SyncManager.addToQueue(payload);
 }
 

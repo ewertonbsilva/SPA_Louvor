@@ -7,8 +7,9 @@ var tempThemeId = localStorage.getItem('tema_escolhido_id') || 1;
 
 // Helper para cores translúcidas
 function hexToRgb(hex) {
+    if (!hex) return "0,0,0";
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0,0,0";
 }
 
 function aplicarTemaAtual(previewId = null) {
@@ -36,12 +37,14 @@ function aplicarTemaAtual(previewId = null) {
 
     const vars = {
         '--primary': tema.primary,
+        '--primary-rgb': hexToRgb(tema.primary),
         '--secondary': tema.secondary || tema.primary,
-        '--secondary-rgb': hexToRgb(tema.secondary || tema.primary) || '230, 126, 34',
+        '--secondary-rgb': hexToRgb(tema.secondary || tema.primary),
         '--accent': tema.primary,
         '--bg': tema.bg,
         '--bg-override': tema.gradient || tema.bg,
         '--card-bg': tema.cardBg || '#ffffff',
+        '--card-bg-rgb': hexToRgb(tema.cardBg || '#ffffff'),
         '--header-bg': headerBg,
         '--text-primary': tema.text || '#1e293b',
         '--text-muted': tema.textMuted || '#64748b',
@@ -88,9 +91,10 @@ function aplicarTemaAtual(previewId = null) {
 
         .nav-btn, .nav-icons i, .header-actions i, .header-left-nav i, .header-right-nav i {
             color: var(--header-text) !important;
-            background: var(--card-bg) !important;
-            border: 1px solid rgba(255,255,255,0.05) !important;
-            opacity: 0.9;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            opacity: 1;
         }
 
         .menu-item, .menu-card, .premium-card, .kpi-card, .glass-card, .comp-card, .dashboard-card, .chart-card {
@@ -183,4 +187,141 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => aplicarTemaAtual());
 } else {
     aplicarTemaAtual();
+}
+
+// ============================================
+// PREMIUM CONFIRMATION MODAL SYSTEM
+// ============================================
+function showConfirmModal(message, confirmText = "Confirmar", cancelText = "Cancelar") {
+    return new Promise((resolve) => {
+        // Remove any existing modal
+        const existing = document.getElementById('premium-confirm-modal');
+        if (existing) existing.remove();
+
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'premium-confirm-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        `;
+
+        modal.innerHTML = `
+            <style>
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { transform: translateY(20px) scale(0.95); opacity: 0; }
+                    to { transform: translateY(0) scale(1); opacity: 1; }
+                }
+            </style>
+            <div style="
+                background: var(--card-bg, #ffffff);
+                border-radius: 24px;
+                padding: 35px;
+                max-width: 420px;
+                width: 100%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                border-top: 4px solid var(--primary, #e74c3c);
+            ">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <i class="fas fa-exclamation-triangle" style="
+                        font-size: 3rem;
+                        color: var(--primary, #e74c3c);
+                        opacity: 0.9;
+                    "></i>
+                </div>
+                <p style="
+                    font-size: 1.05rem;
+                    line-height: 1.6;
+                    color: var(--text-primary, #1e293b);
+                    text-align: center;
+                    margin: 0 0 30px 0;
+                    font-weight: 500;
+                ">${message}</p>
+                <div style="display: flex; gap: 12px;">
+                    <button id="premium-confirm-cancel" style="
+                        flex: 1;
+                        padding: 14px 20px;
+                        border: 2px solid var(--text-muted, #94a3b8);
+                        background: transparent;
+                        color: var(--text-primary, #1e293b);
+                        border-radius: 12px;
+                        font-weight: 700;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        font-family: inherit;
+                    ">${cancelText}</button>
+                    <button id="premium-confirm-ok" style="
+                        flex: 1;
+                        padding: 14px 20px;
+                        border: none;
+                        background: var(--primary, #e74c3c);
+                        color: white;
+                        border-radius: 12px;
+                        font-weight: 700;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        font-family: inherit;
+                    ">${confirmText}</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add hover effects
+        const cancelBtn = modal.querySelector('#premium-confirm-cancel');
+        const okBtn = modal.querySelector('#premium-confirm-ok');
+
+        cancelBtn.addEventListener('mouseenter', () => {
+            cancelBtn.style.background = 'var(--text-muted, #94a3b8)';
+            cancelBtn.style.color = 'white';
+        });
+        cancelBtn.addEventListener('mouseleave', () => {
+            cancelBtn.style.background = 'transparent';
+            cancelBtn.style.color = 'var(--text-primary, #1e293b)';
+        });
+
+        okBtn.addEventListener('mouseenter', () => {
+            okBtn.style.transform = 'scale(1.02)';
+            okBtn.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.3)';
+        });
+        okBtn.addEventListener('mouseleave', () => {
+            okBtn.style.transform = 'scale(1)';
+            okBtn.style.boxShadow = 'none';
+        });
+
+        // Event handlers
+        const cleanup = (result) => {
+            modal.style.animation = 'fadeOut 0.2s ease';
+            setTimeout(() => {
+                modal.remove();
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.addEventListener('click', () => cleanup(false));
+        okBtn.addEventListener('click', () => cleanup(true));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) cleanup(false);
+        });
+    });
 }

@@ -7,10 +7,11 @@ let globalLembretes = [];
 // Mapeamento de ícones por categoria
 const iconsMap = {
     'Violão': 'fa-guitar',
-    'Guitarra': 'fa-guitar',
-    'Baixo': 'fa-drum-steelpan',
+    'Guitarra': 'fa-guitar-electric',
+    'Baixo': 'fa-mandolin',
     'Bateria': 'fa-drum',
     'Teclado': 'fa-keyboard',
+    'Back': 'fa-microphone-stand',
     'Vocal': 'fa-microphone',
     'Ministro': 'fa-crown',
     'Líder': 'fa-crown',
@@ -43,8 +44,8 @@ async function loadData(force = false) {
         return;
     }
 
-    loader.style.display = 'block';
-    container.style.display = 'none';
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt') || document.querySelector('.header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
 
     try {
         await silentSync(); // Reusa a lógica de fetch
@@ -55,7 +56,8 @@ async function loadData(force = false) {
         console.error("Erro ao carregar dados:", e);
         if (!cachedE) alert("Erro ao conectar com o servidor.");
     } finally {
-        loader.style.display = 'none';
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+        if (loader) loader.style.display = 'none';
     }
 }
 
@@ -222,34 +224,56 @@ window.openDetails = function (dateStr) {
         </div>
        <div class="culto-body">
          <div style="font-weight:bold; margin-bottom:5px; color:#aaa; font-size:0.7rem">EQUIPE</div>
-${c.membros.map(m => {
-            const categoria = (m.Função || "").split(' ')[0].trim();
-            const iconeBase = iconsMap[categoria] || 'fa-user';
-            return `
-<div class="member-item">
-  <span>
-    <i class="fa-solid ${iconeBase} ${categoria}"></i> 
-    ${m.Nome}
-  </span>
-  <span style="color:#888; font-size:0.75rem">${m.Função}</span>
-</div>
-`;
-        }).join('')}
+${(() => {
+                let ministroCount = 0;
+                let backCount = 0;
+                const backColors = ["#1abc9c", "#e67e22", "#9b59b6", "#2ecc71", "#34495e"];
+
+                return c.membros.map(m => {
+                    const categoria = (m.Função || "").split(' ')[0].trim();
+                    let iconeBase = iconsMap[categoria] || 'fa-user';
+                    let extraStyle = "";
+
+                    if (categoria === "Ministro") {
+                        ministroCount++;
+                        if (ministroCount === 1) {
+                            iconeBase = "fa-crown";
+                        } else {
+                            iconeBase = "fa-microphone-lines";
+                            extraStyle = "color: #3498db !important;";
+                        }
+                    }
+
+                    if (categoria === "Back") {
+                        extraStyle = `color: ${backColors[backCount % backColors.length]} !important;`;
+                        backCount++;
+                    }
+
+                    return `
+                <div class="member-item">
+                <span>
+                    <i class="fa-solid ${iconeBase} ${categoria}" style="${extraStyle}"></i> 
+                    ${m.Nome}
+                </span>
+                <span style="color:#888; font-size:0.75rem">${m.Função}</span>
+                </div>`;
+                }).join('');
+            })()}
          
          ${globalLembretes.filter(l => {
-            const dataAviso = new Date(dateStr + "T12:00:00").toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-            const matchData = l.Culto && l.Culto.includes(dataAviso);
-            const matchNome = l.Culto && l.Culto.toLowerCase().includes(c.info["Nome dos Cultos"].toLowerCase());
-            return matchData && matchNome;
-        }).length > 0 ? `
+                const dataAviso = new Date(dateStr + "T12:00:00").toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                const matchData = l.Culto && l.Culto.includes(dataAviso);
+                const matchNome = l.Culto && l.Culto.toLowerCase().includes(c.info["Nome dos Cultos"].toLowerCase());
+                return matchData && matchNome;
+            }).length > 0 ? `
            <div style="margin-top:10px; border-top:1px dashed #eee; padding-top:5px;">
              <div style="font-weight:bold; color:#e74c3c; font-size:0.7rem">AVISOS</div>
              ${globalLembretes.filter(l => {
-            const dataAviso = new Date(dateStr + "T12:00:00").toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-            const matchData = l.Culto && l.Culto.includes(dataAviso);
-            const matchNome = l.Culto && l.Culto.toLowerCase().includes(c.info["Nome dos Cultos"].toLowerCase());
-            return matchData && matchNome;
-        }).map(a => `
+                const dataAviso = new Date(dateStr + "T12:00:00").toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                const matchData = l.Culto && l.Culto.includes(dataAviso);
+                const matchNome = l.Culto && l.Culto.toLowerCase().includes(c.info["Nome dos Cultos"].toLowerCase());
+                return matchData && matchNome;
+            }).map(a => `
                <div style="font-size:0.75rem; color:#c0392b; margin-top:3px; position:relative;">
                  <b>${a.Componente}:</b> ${a.Info}
                  ${a.Componente.toLowerCase().trim() === meuNomeLogado ? `
@@ -270,22 +294,22 @@ ${c.membros.map(m => {
             <button class="btn-add-bulk" 
                     style="margin-bottom:10px; width:100%; background:#2ecc71; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.75rem;" 
                     onclick="processarBulk(this, '${encodeURIComponent(JSON.stringify(musicas.map(m => ({
-            ministro: m.Ministro || 'Líder não definido',
-            musicaCantor: (m.Músicas && m.Cantor) ? `${m.Músicas} - ${m.Cantor}` : (m.Músicas || 'Sem Título'),
-            tom: m.Tons || '--'
-        }))))}')">
+                ministro: m.Ministro || 'Líder não definido',
+                musicaCantor: (m.Músicas && m.Cantor) ? `${m.Músicas} - ${m.Cantor}` : (m.Músicas || 'Sem Título'),
+                tom: m.Tons || '--'
+            }))))}')">
                 <i class="fas fa-history"></i> Add Histórico
             </button>
          ` : ''}
 
          ${musicas.map(m => {
-            const nomeMusica = m.Músicas || "Sem título";
-            const nomeCantor = m.Cantor || "Artista Desconhecido";
-            const ministro = m.Ministro || "Líder não definido";
-            const queryBusca = encodeURIComponent(nomeMusica);
-            const querySpotify = encodeURIComponent(`${nomeMusica} ${nomeCantor}`);
+                const nomeMusica = m.Músicas || "Sem título";
+                const nomeCantor = m.Cantor || "Artista Desconhecido";
+                const ministro = m.Ministro || "Líder não definido";
+                const queryBusca = encodeURIComponent(nomeMusica);
+                const querySpotify = encodeURIComponent(`${nomeMusica} ${nomeCantor}`);
 
-            return `
+                return `
             <div class="musica-item">
               <div class="m-nome-musica" style="font-weight: bold; font-size: 0.9rem;">${nomeMusica} - ${nomeCantor}</div>
               <div class="m-mid-row" style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; font-size: 0.75rem;">
@@ -308,7 +332,7 @@ ${c.membros.map(m => {
                 </button>` : ''}
               </div>
             </div>`;
-        }).join('') || '<div style="color:#ccc; font-size:0.8rem">Sem músicas.</div>'}
+            }).join('') || '<div style="color:#ccc; font-size:0.8rem">Sem músicas.</div>'}
        </div>
      </div>`;
     }).join('');
@@ -319,7 +343,12 @@ ${c.membros.map(m => {
 window.onload = () => loadData();
 
 async function processarBulk(btn, encodedData) {
-    if (!confirm("Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)")) return;
+    const confirmed = await showConfirmModal(
+        "Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)",
+        "Adicionar",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
     const lista = JSON.parse(decodeURIComponent(encodedData));
     const originalContent = btn.innerHTML;
@@ -410,7 +439,12 @@ async function enviarAvisoMembro() {
 
 async function excluirAviso(id_Aviso, event) {
     if (event) event.stopPropagation();
-    if (!confirm("Deseja remover este aviso?")) return;
+    const confirmed = await showConfirmModal(
+        "Deseja remover este aviso?",
+        "Remover",
+        "Cancelar"
+    );
+    if (!confirmed) return;
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -422,7 +456,12 @@ async function excluirAviso(id_Aviso, event) {
 }
 
 async function excluirMusica(musica, cultoData, cantor) {
-    if (!confirm(`Deseja remover "${musica}" do repertório?`)) return;
+    const confirmed = await showConfirmModal(
+        `Deseja remover "${musica}" do repertório?`,
+        "Remover",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
     const [nomeCulto, dataCompleta] = cultoData.split('|');
 

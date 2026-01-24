@@ -21,3 +21,11 @@ function confirmarTema() {
     toggleThemePanel();
     if (window.aplicarTemaAtual) aplicarTemaAtual();
 }
+
+function syncLimpeza() {
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}

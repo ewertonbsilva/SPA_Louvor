@@ -16,7 +16,9 @@ function initSelects() {
     tsTom = new TomSelect("#tomSelect");
 }
 
-async function carregarDados() {
+async function carregarDados(force = false) {
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt, .header-right-nav i.fa-sync-alt, .header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
     try {
         initSelects();
         const hoje = new Date();
@@ -30,9 +32,10 @@ async function carregarDados() {
         let musicasDataTemp = [];
 
         // LOAD TRANSFORM
-        if (cachedEscala) {
+        if (!force && cachedEscala) {
             transformDataTemp = JSON.parse(cachedEscala);
         } else {
+            if (force) await new Promise(r => setTimeout(r, 500)); // Tempo mínimo de giro
             const resT = await fetch(SCRIPT_URL + "?sheet=Transformar");
             const jsonT = await resT.json();
             transformDataTemp = jsonT.data;
@@ -68,7 +71,7 @@ async function carregarDados() {
         });
 
         // LOAD MUSICAS
-        if (cachedMusicas) {
+        if (!force && cachedMusicas) {
             musicasDataTemp = JSON.parse(cachedMusicas);
         } else {
             const resM = await fetch(SCRIPT_URL + "?sheet=Musicas");
@@ -91,7 +94,11 @@ async function carregarDados() {
             tsCulto.setValue(autoCulto);
         }
 
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+    }
 }
 
 // FunÃ§Ã£o que filtra os Ministros baseada no Culto selecionado

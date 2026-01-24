@@ -98,21 +98,21 @@ h4,
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    background: var(--card-bg);
+    border: none;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--header-text);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
     cursor: pointer;
 }
 
 .nav-btn:active {
     transform: scale(0.92);
-    background: #f1f5f9;
+    opacity: 0.7;
 }
 
 /* Container */

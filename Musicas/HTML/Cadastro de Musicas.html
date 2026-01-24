@@ -38,11 +38,17 @@
       border: none !important;
     }
   </style>
-  <script>
-    if (new URLSearchParams(window.location.search).get('modal') === 'true') {
-      document.body.classList.add('is-modal');
-    }
-  </script>
+  <div class="header-bar">
+    <div class="header-left-nav">
+      <i class="fas fa-arrow-left nav-btn" onclick="handleBack()" title="Voltar"></i>
+      <i class="fas fa-home nav-btn" onclick="window.location.href='../../index.html'" title="Início"></i>
+    </div>
+    <h2 class="header-title">Cadastrar Música</h2>
+    <div class="header-right-nav">
+      <i class="fas fa-palette nav-btn" onclick="toggleThemePanel()" title="Trocar Tema"></i>
+      <i class="fas fa-sync-alt nav-btn" onclick="loadTemas(true)" title="Sincronizar"></i>
+    </div>
+  </div>
 
   <div id="themePanel" class="theme-panel">
     <h3>Escolha um Tema</h3>
@@ -91,6 +97,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
   <script src="../JS/cadastro-musicas.js"></script>
+  <script>
+    if (new URLSearchParams(window.location.search).get('modal') === 'true') {
+      document.body.classList.add('is-modal');
+    }
+  </script>
 </body>
 
 </html>

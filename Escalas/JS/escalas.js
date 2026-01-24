@@ -5,12 +5,12 @@ const urlLembretes = SCRIPT_URL + "?sheet=Lembretes";
 
 const iconsMap = {
     "Ministro": "fa-microphone-lines",
-    "Back": "fa-microphone",
+    "Back": "fa-microphone-stand",
     "Violão": "fa-guitar",
-    "Guitarra": "fa-guitar",
+    "Guitarra": "fa-guitar-electric",
     "Teclado": "fa-keyboard",
     "Bateria": "fa-drum",
-    "Baixo": "fa-guitar"
+    "Baixo": "fa-mandolin"
 };
 function safeParse(jsonString, fallback = []) {
     try {
@@ -37,8 +37,8 @@ async function loadAll(force = false) {
         return;
     }
 
-    loader.style.display = 'block';
-    loader.innerHTML = '<i class="fas fa-sync fa-spin"></i> Atualizando dados...';
+    const btnIcon = document.querySelector('.nav-btn.fa-sync-alt') || document.querySelector('.header-right i.fa-sync-alt');
+    if (btnIcon) btnIcon.classList.add('fa-spin');
 
     try {
         await silentSync();
@@ -46,8 +46,8 @@ async function loadAll(force = false) {
         const rData = JSON.parse(localStorage.getItem('offline_repertorio'));
         const lData = JSON.parse(localStorage.getItem('offline_lembretes'));
         renderMaster(eData, rData, lData);
-        loader.style.display = 'none';
-        if (force) alert("Escalas atualizadas!");
+        if (btnIcon) btnIcon.classList.remove('fa-spin');
+        if (loader) loader.style.display = 'none';
     } catch (e) {
         console.error(e);
         loader.innerText = "Erro ao carregar dados.";
@@ -192,19 +192,41 @@ function renderMaster(escalas, musicas = [], lembretes = []) {
             </button>
           ` : ''}
         </div>
-  ${item.membros.map(m => {
-            const categoria = m.funcao.split(' ')[0]; // Pega "Violão", "Guitarra", etc.
-            const iconeBase = iconsMap[categoria] || 'fa-star';
+  ${(() => {
+                let ministroCount = 0;
+                let backCount = 0;
+                const backColors = ["#1abc9c", "#e67e22", "#9b59b6", "#2ecc71", "#34495e"];
 
-            return `
-    <div class="member-item">
-      <i class="fa-solid ${iconeBase} ${categoria}"></i>
-      <div class="member-info">
-          <span class="m-nome">${m.nome}</span>
-          <span class="m-funcao">${m.funcao}</span>
-      </div>
-      </div>`;
-        }).join('')}
+                return item.membros.map(m => {
+                    const categoria = m.funcao.split(' ')[0];
+                    let iconeBase = iconsMap[categoria] || 'fa-user';
+                    let extraStyle = "";
+
+                    if (categoria === "Ministro") {
+                        ministroCount++;
+                        if (ministroCount === 1) {
+                            iconeBase = "fa-crown";
+                        } else {
+                            iconeBase = "fa-microphone-lines";
+                            extraStyle = "color: #3498db !important;";
+                        }
+                    }
+
+                    if (categoria === "Back") {
+                        extraStyle = `color: ${backColors[backCount % backColors.length]} !important;`;
+                        backCount++;
+                    }
+
+                    return `
+                <div class="member-item">
+                  <i class="fa-solid ${iconeBase} ${categoria}" style="${extraStyle}"></i>
+                  <div class="member-info">
+                      <span class="m-nome">${m.nome}</span>
+                      <span class="m-funcao">${m.funcao}</span>
+                  </div>
+                </div>`;
+                }).join('');
+            })()}
 
         ${avisosDoCulto.length > 0 ? `
           <div class="extra-section" style="margin-top:15px; border-top:1px dashed #eee; padding-top:10px;">
@@ -248,13 +270,13 @@ function renderMaster(escalas, musicas = [], lembretes = []) {
         ` : ''}
         
         ${musicasDoCulto.map(m => {
-            const nomeMusica = m.Músicas || "Música sem nome";
-            const cantor = m.Cantor || "Artista Desconhecido";
-            const ministro = m.Ministro || "Líder não definido";
-            const queryBusca = encodeURIComponent(nomeMusica);
-            const querySpotify = encodeURIComponent(`${nomeMusica} ${cantor}`);
+                const nomeMusica = m.Músicas || "Música sem nome";
+                const cantor = m.Cantor || "Artista Desconhecido";
+                const ministro = m.Ministro || "Líder não definido";
+                const queryBusca = encodeURIComponent(nomeMusica);
+                const querySpotify = encodeURIComponent(`${nomeMusica} ${cantor}`);
 
-            return `
+                return `
             <div class="musica-item">
                 <div class="m-nome-musica" style="font-weight: bold; font-size: 0.9rem;">${nomeMusica} - ${cantor}</div>
                 <div class="m-mid-row" style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; font-size: 0.75rem;">
@@ -277,7 +299,7 @@ function renderMaster(escalas, musicas = [], lembretes = []) {
                 </button>` : ''}
                 </div>
             </div>`;
-        }).join('')}
+            }).join('')}
     ` : '<span style="color:#ccc; font-size:0.85rem">Aguardando repertório...</span>'}
 </div>
       </div>
@@ -303,7 +325,12 @@ function processarBulk(btn, eventOrInfo) {
 }
 
 async function addBulkHistorico(btn, jsonStr) {
-    if (!confirm("Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)")) return;
+    const confirmed = await showConfirmModal(
+        "Adicionar todas as músicas deste culto ao histórico? (Duplicatas serão ignoradas)",
+        "Adicionar",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
     const lista = JSON.parse(jsonStr);
     const originalContent = btn.innerHTML;
@@ -390,7 +417,12 @@ function fecharModalAvisoMembro() {
     document.getElementById('textoAvisoMembro').value = '';
 }
 async function excluirMusica(musica, cultoData, ministro) {
-    if (!confirm(`Deseja remover "${musica}"?`)) return;
+    const confirmed = await showConfirmModal(
+        `Deseja remover "${musica}"?`,
+        "Remover",
+        "Cancelar"
+    );
+    if (!confirmed) return;
 
     // cultoData chega como "Nome do Culto|2026-02-01T08:00:00.000Z"
     const [nomeCulto, dataCompleta] = cultoData.split('|');
@@ -423,7 +455,12 @@ async function excluirMusica(musica, cultoData, ministro) {
 }
 
 async function excluirMusica(musica, cultoData, cantor) {
-    if (!confirm(`Deseja remover "${musica}"?`)) return;
+    const confirmed = await showConfirmModal(
+        `Deseja remover "${musica}"?`,
+        "Remover",
+        "Cancelar"
+    );
+    if (!confirmed) return;
     try {
         // Passar os campos corretos para exclusÃ£o: MÃºsicas, Culto, Data
         const payload = {
