@@ -28,7 +28,34 @@ if (role === 'Admin') {
 // Funções para abrir dashboards
 function abrirDashboard() {
     if (window.AdvancedDashboard) {
-        window.AdvancedDashboard.renderDashboard(document.body);
+        // Verificar se há dados antes de abrir
+        const escalasData = localStorage.getItem('offline_escala');
+        const componentesData = localStorage.getItem('offline_componentes');
+        
+        if (!escalasData || !componentesData) {
+            // Tentar sincronizar dados primeiro
+            if (window.showToast) {
+                window.showToast('Sincronizando dados do dashboard...', 'info', 3000);
+            }
+            
+            // Tentar carregar dados se houver função de sincronização disponível
+            if (typeof carregarDados === 'function') {
+                carregarDados(true).then(() => {
+                    // Abrir dashboard após sincronização
+                    window.AdvancedDashboard.renderDashboard(document.body);
+                }).catch(error => {
+                    console.error('Erro ao sincronizar dados:', error);
+                    // Abrir mesmo assim com dados existentes
+                    window.AdvancedDashboard.renderDashboard(document.body);
+                });
+            } else {
+                // Abrir mesmo assim
+                window.AdvancedDashboard.renderDashboard(document.body);
+            }
+        } else {
+            // Abrir diretamente se já houver dados
+            window.AdvancedDashboard.renderDashboard(document.body);
+        }
     } else {
         alert('Dashboard não disponível. Verifique se o módulo foi carregado.');
     }

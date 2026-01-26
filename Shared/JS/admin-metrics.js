@@ -89,7 +89,7 @@ class AdminMetrics {
                 right: -100%;
                 width: 400px;
                 height: 100vh;
-                background: var(--background);
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
                 border-left: 1px solid var(--border);
                 box-shadow: -2px 0 10px rgba(0,0,0,0.1);
                 transition: right 0.3s ease;
@@ -97,54 +97,14 @@ class AdminMetrics {
                 overflow-y: auto;
             }
             
-            .admin-metrics-header {
-                padding: 20px;
-                background: var(--primary, #1e293b);
-                color: white;
-                position: sticky;
-                top: 0;
-                z-index: 1;
-            }
-            
-            .admin-metrics-title {
-                font-size: 18px;
-                font-weight: 700;
-                margin: 0 0 10px 0;
-            }
-            
-            .admin-metrics-status {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 12px;
-            }
-            
-            .status-indicator {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                animation: pulse 2s infinite;
-            }
-            
-            .status-indicator.online {
-                background: #27ae60;
-            }
-            
-            .status-indicator.warning {
-                background: #f39c12;
-            }
-            
-            .status-indicator.error {
-                background: #e74c3c;
-            }
-            
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.5; }
+            .admin-metrics-panel.open {
+                right: 0;
             }
             
             .admin-metrics-content {
                 padding: 20px;
+                height: calc(100vh - 60px); /* Subtrair altura do header-bar */
+                overflow-y: auto;
             }
             
             .metrics-section {
@@ -155,18 +115,19 @@ class AdminMetrics {
                 font-size: 16px;
                 font-weight: 600;
                 margin-bottom: 15px;
-                color: var(--text-primary, #1e293b);
+                color: #ffffff;
                 display: flex;
                 align-items: center;
                 gap: 8px;
             }
             
             .metric-card {
-                background: #f8fafc;
+                background: rgba(255, 255, 255, 0.95);
                 border-radius: 8px;
                 padding: 15px;
                 margin-bottom: 12px;
                 border-left: 4px solid var(--primary, #3498db);
+                backdrop-filter: blur(10px);
             }
             
             .metric-card.warning {
@@ -191,18 +152,18 @@ class AdminMetrics {
             .metric-name {
                 font-size: 14px;
                 font-weight: 600;
-                color: var(--text-primary, #1e293b);
+                color: #1e293b;
             }
             
             .metric-value {
                 font-size: 20px;
                 font-weight: 700;
-                color: var(--text-primary, #1e293b);
+                color: #1e293b;
             }
             
             .metric-change {
                 font-size: 12px;
-                color: var(--text-muted, #64748b);
+                color: #64748b;
             }
             
             .metric-change.positive {
@@ -217,13 +178,19 @@ class AdminMetrics {
                 height: 200px;
                 margin-bottom: 15px;
                 position: relative;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 8px;
+                padding: 10px;
+                backdrop-filter: blur(10px);
             }
             
             .alerts-section {
-                background: #fff5f5;
+                background: rgba(255, 255, 255, 0.1);
                 border-radius: 8px;
                 padding: 15px;
                 margin-bottom: 20px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             }
             
             .alert-item {
@@ -231,7 +198,7 @@ class AdminMetrics {
                 align-items: center;
                 gap: 10px;
                 padding: 10px;
-                background: white;
+                background: rgba(255, 255, 255, 0.95);
                 border-radius: 6px;
                 margin-bottom: 8px;
                 border-left: 4px solid #e74c3c;
@@ -276,16 +243,17 @@ class AdminMetrics {
                 font-size: 12px;
                 font-weight: 600;
                 margin-bottom: 2px;
+                color: #1e293b;
             }
             
             .alert-message {
                 font-size: 11px;
-                color: var(--text-muted, #64748b);
+                color: #64748b;
             }
             
             .alert-time {
                 font-size: 10px;
-                color: var(--text-muted, #64748b);
+                color: #64748b;
             }
             
             .actions-section {
@@ -297,17 +265,19 @@ class AdminMetrics {
             .action-btn {
                 flex: 1;
                 padding: 10px;
-                border: 1px solid #e2e8f0;
+                border: 1px solid rgba(255, 255, 255, 0.3);
                 border-radius: 6px;
-                background: white;
+                background: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
                 font-size: 12px;
                 cursor: pointer;
                 transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
             }
             
             .action-btn:hover {
-                background: #f8fafc;
-                border-color: var(--secondary, #3498db);
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.5);
             }
             
             .action-btn.primary {
@@ -407,11 +377,13 @@ class AdminMetrics {
         panel.className = 'admin-metrics-panel';
         
         panel.innerHTML = `
-            <div class="admin-metrics-header">
-                <h2 class="admin-metrics-title">📊 Painel de Métricas</h2>
-                <div class="admin-metrics-status">
-                    <div class="status-indicator online"></div>
-                    <span>Monitorando em tempo real</span>
+            <div class="header-bar">
+                <div class="header-left-nav">
+                    <i class="fas fa-arrow-left nav-btn" onclick="window.AdminMetrics.close()" title="Voltar"></i>
+                </div>
+                <h2 class="header-title">📊 Painel de Métricas</h2>
+                <div class="header-right-nav">
+                    <i class="fas fa-home nav-btn" onclick="window.location.href='../../index.html'" title="Início"></i>
                 </div>
             </div>
             
@@ -500,6 +472,13 @@ class AdminMetrics {
         `;
         
         document.body.appendChild(panel);
+    }
+    
+    close() {
+        const panel = document.getElementById('admin-metrics-panel');
+        if (panel) {
+            panel.classList.remove('open');
+        }
     }
     
     toggle() {

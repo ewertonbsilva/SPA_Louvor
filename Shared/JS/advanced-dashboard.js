@@ -408,15 +408,31 @@ class AdvancedDashboard {
                 this.refreshDashboard();
             }
         });
+        
+        // Listener para tecla ESC (quando o dashboard está ativo)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.querySelector('.advanced-dashboard')) {
+                this.closeDashboard();
+            }
+        });
     }
     
     async renderDashboard(container) {
         if (!container) return;
         
         container.innerHTML = `
+            <div class="header-bar">
+                <div class="header-left-nav">
+                    <i class="fas fa-arrow-left nav-btn" onclick="window.location.href='MenuUtilitarios.html'" title="Voltar"></i>
+                </div>
+                <h2 class="header-title">📊 Dashboard Avançado</h2>
+                <div class="header-right-nav">
+               <i class="fas fa-home nav-btn" onclick="window.location.href='../../index.html'" title="Início"></i>
+                </div>
+            </div>
+            
             <div class="advanced-dashboard">
                 <div class="dashboard-header">
-                    <h2 class="dashboard-title">📊 Dashboard Avançado</h2>
                     <div class="dashboard-filters">
                         <select class="filter-select" data-filter="period">
                             <option value="week">Esta Semana</option>
@@ -520,6 +536,12 @@ class AdvancedDashboard {
         `;
         
         await this.loadDashboardData();
+        
+        // Adicionar event listener para o botão voltar
+        const btnBack = document.getElementById('btnBack');
+        if (btnBack) {
+            btnBack.addEventListener('click', () => this.closeDashboard());
+        }
     }
     
     async loadDashboardData() {
@@ -530,6 +552,21 @@ class AdvancedDashboard {
             // Carregar dados das escalas
             const escalas = await this.getEscalasData();
             const componentes = await this.getComponentesData();
+            
+            // Debug logs
+            console.log('Dashboard - Escalas carregadas:', escalas.length, escalas.slice(0, 3));
+            console.log('Dashboard - Componentes carregados:', componentes.length, componentes.slice(0, 3));
+            
+            // Verificar se há dados
+            if (escalas.length === 0) {
+                console.warn('Dashboard: Nenhuma escala encontrada. Verificando localStorage...');
+                console.log('localStorage offline_escala:', localStorage.getItem('offline_escala')?.substring(0, 200) + '...');
+            }
+            
+            if (componentes.length === 0) {
+                console.warn('Dashboard: Nenhum componente encontrado. Verificando localStorage...');
+                console.log('localStorage offline_componentes:', localStorage.getItem('offline_componentes')?.substring(0, 200) + '...');
+            }
             
             // Processar dados
             const metrics = this.calculateMetrics(escalas, componentes);
@@ -555,9 +592,18 @@ class AdvancedDashboard {
     
     async getEscalasData() {
         try {
-            const data = await window.IDBManager?.get('offline_escala') || 
-                        JSON.parse(localStorage.getItem('offline_escala') || '[]');
-            return data.data || [];
+            // Tentar obter do IndexedDB primeiro
+            const idbData = await window.IDBManager?.get('offline_escala');
+            if (idbData) {
+                // Se for objeto com propriedade data, usar data.data
+                // Se for array direto, usar o próprio objeto
+                return Array.isArray(idbData) ? idbData : (idbData.data || []);
+            }
+            
+            // Fallback para localStorage
+            const lsData = JSON.parse(localStorage.getItem('offline_escala') || '[]');
+            // No localStorage, os dados são salvos como array direto
+            return Array.isArray(lsData) ? lsData : (lsData.data || []);
         } catch (error) {
             console.error('Erro ao carregar escalas:', error);
             return [];
@@ -566,9 +612,18 @@ class AdvancedDashboard {
     
     async getComponentesData() {
         try {
-            const data = await window.IDBManager?.get('offline_componentes') || 
-                        JSON.parse(localStorage.getItem('offline_componentes') || '[]');
-            return data.data || [];
+            // Tentar obter do IndexedDB primeiro
+            const idbData = await window.IDBManager?.get('offline_componentes');
+            if (idbData) {
+                // Se for objeto com propriedade data, usar data.data
+                // Se for array direto, usar o próprio objeto
+                return Array.isArray(idbData) ? idbData : (idbData.data || []);
+            }
+            
+            // Fallback para localStorage
+            const lsData = JSON.parse(localStorage.getItem('offline_componentes') || '[]');
+            // No localStorage, os dados são salvos como array direto
+            return Array.isArray(lsData) ? lsData : (lsData.data || []);
         } catch (error) {
             console.error('Erro ao carregar componentes:', error);
             return [];
@@ -789,6 +844,12 @@ class AdvancedDashboard {
         const container = document.getElementById('evolutionChart');
         if (!container) return;
         
+        // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Chart.js não disponível. Gráficos desabilitados.</div>';
+            return;
+        }
+        
         container.innerHTML = '<canvas id="evolutionCanvas"></canvas>';
         
         const ctx = document.getElementById('evolutionCanvas').getContext('2d');
@@ -848,6 +909,12 @@ class AdvancedDashboard {
         const container = document.getElementById('rolesChart');
         if (!container) return;
         
+        // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Chart.js não disponível. Gráficos desabilitados.</div>';
+            return;
+        }
+        
         container.innerHTML = '<canvas id="rolesCanvas"></canvas>';
         
         const ctx = document.getElementById('rolesCanvas').getContext('2d');
@@ -881,6 +948,12 @@ class AdvancedDashboard {
     renderFrequencyChart(data) {
         const container = document.getElementById('frequencyChart');
         if (!container) return;
+        
+        // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Chart.js não disponível. Gráficos desabilitados.</div>';
+            return;
+        }
         
         container.innerHTML = '<canvas id="frequencyCanvas"></canvas>';
         
@@ -924,6 +997,12 @@ class AdvancedDashboard {
     renderEngagementChart(data) {
         const container = document.getElementById('engagementChart');
         if (!container) return;
+        
+        // Verificar se Chart.js está disponível
+        if (typeof Chart === 'undefined') {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Chart.js não disponível. Gráficos desabilitados.</div>';
+            return;
+        }
         
         container.innerHTML = '<canvas id="engagementCanvas"></canvas>';
         
@@ -1116,6 +1195,24 @@ class AdvancedDashboard {
         if (chart) {
             chart.config.type = chart.config.type === 'line' ? 'bar' : 'line';
             chart.update();
+        }
+    }
+    
+    closeDashboard() {
+        // Limpar todos os gráficos
+        this.charts.forEach(chart => {
+            if (chart && typeof chart.destroy === 'function') {
+                chart.destroy();
+            }
+        });
+        this.charts.clear();
+        
+        // Voltar para a página anterior
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // Se não há histórico, redirecionar para o menu utilitários
+            window.location.href = 'Utilitarios/HTML/MenuUtilitarios.html';
         }
     }
 }
