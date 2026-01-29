@@ -9,18 +9,9 @@ const AttendanceView: React.FC = () => {
   const [justifyingMemberId, setJustifyingMemberId] = useState<string | null>(null);
   const [justificationText, setJustificationText] = useState('');
 
-  const [events, setEvents] = useState<AttendanceEvent[]>([
-    { id: '1', theme: 'Ensaio Geral - Santa Ceia', date: '2024-01-28', status: 'closed', records: [] },
-    { id: '2', theme: 'Reunião de Alinhamento', date: '2024-02-05', status: 'open', records: [] },
-  ]);
+  const [events, setEvents] = useState<AttendanceEvent[]>([]);
 
-  const members: Member[] = [
-    { id: 'm1', name: 'Ewerton Silva', role: 'Ministro', gender: 'M', status: 'confirmed', avatar: 'https://picsum.photos/seed/m1/100' },
-    { id: 'm2', name: 'Rosy Oliveira', role: 'Vocal', gender: 'F', status: 'confirmed', avatar: 'https://picsum.photos/seed/m2/100' },
-    { id: 'm3', name: 'Jhordan Santos', role: 'Baixo', gender: 'M', status: 'confirmed', avatar: 'https://picsum.photos/seed/m3/100' },
-    { id: 'm4', name: 'Mariana Costa', role: 'Teclado', gender: 'F', status: 'confirmed', avatar: 'https://picsum.photos/seed/m4/100' },
-    { id: 'm5', name: 'Lucas Lima', role: 'Bateria', gender: 'M', status: 'confirmed', avatar: 'https://picsum.photos/seed/m5/100' },
-  ];
+  const members: Member[] = [];
 
   const [currentAttendance, setCurrentAttendance] = useState<Record<string, AttendanceStatus>>({});
 

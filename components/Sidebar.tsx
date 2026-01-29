@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
+
 import { ViewType } from '../types';
 
 interface SidebarProps {
@@ -13,12 +15,12 @@ interface SidebarProps {
   setIsProfileModalOpen: (open: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  currentView, 
-  onViewChange, 
-  isDarkMode, 
-  onToggleTheme, 
-  brandColor, 
+const Sidebar: React.FC<SidebarProps> = ({
+  currentView,
+  onViewChange,
+  isDarkMode,
+  onToggleTheme,
+  brandColor,
   onColorChange,
   isProfileModalOpen,
   setIsProfileModalOpen
@@ -28,6 +30,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     name: 'Administrador do Sistema',
     password: ''
   });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   useEffect(() => {
     if (isProfileModalOpen) {
@@ -81,8 +87,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onViewChange(item.default as ViewType)}
             className={`
               flex flex-col lg:flex-row items-center gap-1 lg:gap-4 px-3 lg:px-5 py-2 lg:py-4 rounded-xl lg:rounded-2xl transition-all
-              ${isActive(item.id) 
-                ? 'text-brand lg:bg-brand lg:text-white lg:shadow-xl shadow-brand/20' 
+              ${isActive(item.id)
+                ? 'text-brand lg:bg-brand lg:text-white lg:shadow-xl shadow-brand/20'
                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 lg:hover:bg-slate-50 lg:dark:hover:bg-slate-800/50'}
             `}
           >
@@ -103,11 +109,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           {isThemeExpanded && (
             <div className="px-4 pb-3 flex justify-between gap-1 animate-fade-in">
               {themeColors.map(color => (
-                <button 
-                  key={color} 
-                  onClick={() => onColorChange(color)} 
-                  className={`w-6 h-6 rounded-lg border-2 transition-all ${brandColor === color ? 'border-brand/50 scale-110' : 'border-transparent opacity-60 hover:opacity-100'}`} 
-                  style={{ backgroundColor: color }} 
+                <button
+                  key={color}
+                  onClick={() => onColorChange(color)}
+                  className={`w-6 h-6 rounded-lg border-2 transition-all ${brandColor === color ? 'border-brand/50 scale-110' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  style={{ backgroundColor: color }}
                 />
               ))}
             </div>
@@ -115,17 +121,26 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* User Card */}
-        <div onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group">
-          <div className="w-9 h-9 bg-brand rounded-full flex items-center justify-center text-white font-black text-[10px] shadow-sm group-hover:scale-105 transition-transform">AD</div>
-          <div className="flex flex-col flex-1 truncate">
-            <span className="text-[11px] font-black text-slate-800 dark:text-white truncate">{profileData.name}</span>
-            <span className="text-[7px] font-bold text-brand uppercase tracking-widest">Painel</span>
+        <div className="flex items-center gap-2">
+          <div onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group flex-1">
+            <div className="w-9 h-9 bg-brand rounded-full flex items-center justify-center text-white font-black text-[10px] shadow-sm group-hover:scale-105 transition-transform">AD</div>
+            <div className="flex flex-col flex-1 truncate">
+              <span className="text-[11px] font-black text-slate-800 dark:text-white truncate">{profileData.name}</span>
+              <span className="text-[7px] font-bold text-brand uppercase tracking-widest">Painel</span>
+            </div>
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-12 h-[60px] flex items-center justify-center rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all group"
+            title="Sair do Sistema"
+          >
+            <i className="fas fa-sign-out-alt text-lg group-hover:scale-110 transition-transform"></i>
+          </button>
         </div>
 
         {/* Theme Toggle */}
-        <button 
-          onClick={onToggleTheme} 
+        <button
+          onClick={onToggleTheme}
           className="flex items-center justify-center gap-2 w-full h-11 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 hover:text-brand transition-all font-black text-[9px] uppercase tracking-widest"
         >
           <i className={isDarkMode ? "fas fa-sun text-brand-gold" : "fas fa-moon text-brand"}></i>
@@ -142,24 +157,24 @@ const Sidebar: React.FC<SidebarProps> = ({
               <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tighter">Configurações</h3>
               <button onClick={() => setIsProfileModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><i className="fas fa-times text-lg"></i></button>
             </div>
-            
+
             <div className="flex flex-col items-center mb-6">
-               <div className="relative mb-2">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-slate-50 dark:border-slate-800 shadow-xl overflow-hidden">
-                     <i className="fas fa-user text-2xl text-slate-300"></i>
-                  </div>
-               </div>
-               <p className="text-[9px] font-black text-brand uppercase tracking-widest">Administrador</p>
+              <div className="relative mb-2">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-slate-50 dark:border-slate-800 shadow-xl overflow-hidden">
+                  <i className="fas fa-user text-2xl text-slate-300"></i>
+                </div>
+              </div>
+              <p className="text-[9px] font-black text-brand uppercase tracking-widest">Administrador</p>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block ml-1">Nome de Exibição</label>
-                <input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-1 focus:ring-brand" />
+                <input type="text" value={profileData.name} onChange={(e) => setProfileData({ ...profileData, name: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-1 focus:ring-brand" />
               </div>
               <div>
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block ml-1">Alterar Senha</label>
-                <input type="password" value={profileData.password} onChange={(e) => setProfileData({...profileData, password: e.target.value})} placeholder="••••••••" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-1 focus:ring-brand" />
+                <input type="password" value={profileData.password} onChange={(e) => setProfileData({ ...profileData, password: e.target.value })} placeholder="••••••••" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-1 focus:ring-brand" />
               </div>
 
               <div className="lg:hidden space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -177,8 +192,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div className="flex gap-4 mt-8">
-               <button onClick={() => setIsProfileModalOpen(false)} className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-[9px]">Fechar</button>
-               <button onClick={() => { setIsProfileModalOpen(false); alert('Salvo!'); }} className="flex-1 py-3.5 bg-brand text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg shadow-brand/20">Salvar</button>
+              <button onClick={() => setIsProfileModalOpen(false)} className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl font-black uppercase tracking-widest text-[9px]">Fechar</button>
+              <button onClick={() => { setIsProfileModalOpen(false); alert('Salvo!'); }} className="flex-1 py-3.5 bg-brand text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg shadow-brand/20">Salvar</button>
             </div>
           </div>
         </div>

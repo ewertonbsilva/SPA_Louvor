@@ -14,70 +14,7 @@ const CalendarView: React.FC = () => {
   const [currentBaseDate, setCurrentBaseDate] = useState(new Date(2024, 4, 1)); // Começa em Maio/2024
 
   // Mock Data centralizado - Exibindo todas as escalas
-  const [events] = useState<ScheduleEvent[]>([
-    {
-      id: '1',
-      title: 'SANTA CEIA',
-      date: '01/05',
-      dayOfWeek: 'DOM',
-      time: '19:00',
-      members: [
-        { id: 'm1', name: 'Ewerton Silva', role: 'Ministro', gender: 'M', status: 'confirmed', avatar: '', icon: 'fa-crown text-brand' },
-        { id: 'm2', name: 'Rosy Oliveira', role: 'Vocal', gender: 'F', status: 'confirmed', avatar: '', icon: 'fa-microphone text-slate-300' },
-        { id: 'm5', name: 'Ewerton', role: 'Violão', gender: 'M', status: 'confirmed', avatar: '', icon: 'fa-guitar text-orange-400' },
-      ],
-      repertoire: [
-        { id: 'r1', song: 'Bondade de Deus', singer: 'Rosy', key: 'G' },
-        { id: 'r2', song: 'A Casa é Sua', singer: 'Ewerton', key: 'Bb' }
-      ]
-    },
-    {
-      id: '2',
-      title: 'CULTO DA FAMÍLIA',
-      date: '08/05',
-      dayOfWeek: 'DOM',
-      time: '19:00',
-      members: [
-        { id: 'm4', name: 'Mariana Costa', role: 'Ministro', gender: 'F', status: 'confirmed', avatar: '', icon: 'fa-crown text-brand' },
-      ],
-      repertoire: [
-        { id: 'r3', song: 'Lugar Secreto', singer: 'Mariana', key: 'E' }
-      ]
-    },
-    {
-      id: '3',
-      title: 'CULTO DE JOVENS',
-      date: '15/05',
-      dayOfWeek: 'QUA',
-      time: '20:00',
-      members: [
-        { id: 'm10', name: 'Vitor Mesquita', role: 'Ministro', gender: 'M', status: 'confirmed', avatar: '', icon: 'fa-microphone text-brand' },
-      ],
-      repertoire: []
-    },
-    {
-      id: '4',
-      title: 'DOMINGO DA VITÓRIA',
-      date: '22/05',
-      dayOfWeek: 'DOM',
-      time: '19:00',
-      members: [
-        { id: 'm1', name: 'Ewerton Silva', role: 'Ministro', gender: 'M', status: 'confirmed', avatar: '', icon: 'fa-crown text-brand' },
-      ],
-      repertoire: []
-    },
-    {
-      id: '5',
-      title: 'CULTO DE MISSÕES',
-      date: '05/06',
-      dayOfWeek: 'DOM',
-      time: '19:00',
-      members: [
-        { id: 'm2', name: 'Rosy Oliveira', role: 'Vocal', gender: 'F', status: 'confirmed', avatar: '', icon: 'fa-microphone text-slate-300' },
-      ],
-      repertoire: []
-    }
-  ]);
+  const [events] = useState<ScheduleEvent[]>([]);
 
   const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];

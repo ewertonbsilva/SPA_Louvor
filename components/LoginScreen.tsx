@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 interface LoginScreenProps {
   onLogin: () => void;
@@ -9,15 +10,35 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate auth
-    setTimeout(() => {
+
+    setError('');
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.username,
+        password: formData.password,
+      });
+
+      if (error) {
+        if (error.message === 'Invalid login credentials') {
+          setError('Email ou senha incorretos. Tente novamente.');
+        } else {
+          setError('Erro ao fazer login: ' + error.message);
+        }
+      } else {
+        onLogin();
+      }
+    } catch (err) {
+      setError('Ocorreu um erro inesperado.');
+      console.error(err);
+    } finally {
       setIsLoading(false);
-      onLogin();
-    }, 1200);
+    }
   };
 
   return (
@@ -42,20 +63,31 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest mt-3">Acesso Administrativo</p>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 flex items-center gap-3 animate-fade-in">
+            <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center shrink-0">
+              <i className="fas fa-exclamation-triangle text-red-500 dark:text-red-400 text-xs"></i>
+            </div>
+            <p className="text-[10px] font-bold text-red-600 dark:text-red-300 uppercase tracking-wide leading-relaxed flex-1">
+              {error}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Email</label>
             <div className="relative group">
               <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
-                <i className="fas fa-user-alt text-sm"></i>
+                <i className="fas fa-envelope text-sm"></i>
               </div>
-              <input 
-                type="text" 
+              <input
+                type="email"
                 required
                 value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
-                placeholder="Seu identificador"
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl py-4 pl-14 pr-6 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand transition-all font-medium" 
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                placeholder="seu@email.com"
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl py-4 pl-14 pr-6 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand transition-all font-medium"
               />
             </div>
           </div>
@@ -66,15 +98,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
                 <i className="fas fa-lock text-sm"></i>
               </div>
-              <input 
-                type={showPassword ? "text" : "password"} 
+              <input
+                type={showPassword ? "text" : "password"}
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl py-4 pl-14 pr-14 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand transition-all font-medium" 
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl py-4 pl-14 pr-14 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand transition-all font-medium"
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
@@ -92,7 +124,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <button type="button" className="text-[10px] font-black text-brand-gold uppercase tracking-widest hover:text-brand transition-all">Esqueceu a senha?</button>
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={isLoading}
             className="w-full py-5 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-2xl shadow-brand/20 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-3"

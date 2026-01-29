@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Toolbar from './components/Toolbar';
@@ -64,11 +65,34 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (appState === 'splash') {
-      const timer = setTimeout(() => {
-        setAppState('login');
-      }, 3500);
-      return () => clearTimeout(timer);
+      const checkSession = async () => {
+        // Wait a bit for splash effect
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setAppState('main');
+        } else {
+          setAppState('login');
+        }
+      };
+
+      checkSession();
     }
+  }, [appState]);
+
+  // Listen for auth changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setAppState('main');
+      } else if (appState !== 'splash') {
+        // Only redirect to login if not in splash screen (to avoid conflict with initial check)
+        setAppState('login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [appState]);
 
   if (appState === 'splash') {
@@ -81,9 +105,9 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#f4f7fa] dark:bg-[#0b1120] transition-colors duration-300">
-      <Sidebar 
-        currentView={currentView} 
-        onViewChange={setCurrentView} 
+      <Sidebar
+        currentView={currentView}
+        onViewChange={setCurrentView}
         isDarkMode={isDarkMode}
         onToggleTheme={toggleDarkMode}
         brandColor={brandColor}
@@ -91,16 +115,16 @@ const App: React.FC = () => {
         isProfileModalOpen={isProfileModalOpen}
         setIsProfileModalOpen={setIsProfileModalOpen}
       />
-      
+
       <div className="flex-grow flex flex-col lg:pl-[280px]">
-        <Header 
-          onSync={handleSync} 
-          onOpenProfile={() => setIsProfileModalOpen(true)} 
+        <Header
+          onSync={handleSync}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
         />
 
         <main className="flex-grow pt-24 lg:pt-10 pb-20 lg:pb-10 px-6 lg:px-12 w-full">
-          <Toolbar 
-            currentView={currentView} 
+          <Toolbar
+            currentView={currentView}
             onViewChange={setCurrentView}
           />
 

@@ -9,18 +9,12 @@ const DashboardView: React.FC = () => {
   const [currentDevocional, setCurrentDevocional] = useState('Porque, onde estiverem dois ou três reunidos em meu nome, ali estou eu no meio deles. (Mateus 18:20)');
 
   // Mock de dados (Simulando o que viria do estado global/API)
-  const memberStats = [
-    { name: 'Ewerton', count: 5 },
-    { name: 'Rosy', count: 3 },
-    { name: 'Mariana', count: 4 },
-    { name: 'Jhordan', count: 2 },
-    { name: 'Vitor', count: 3 }
-  ];
+  const memberStats: any[] = [];
 
   // Dados para os novos KPIs
-  const totalUserAtivos = 12; // Membros escalados nos próximos eventos
-  const totalCultos = 8;     // Total de cultos programados
-  const proximaEscala = "24/05 - Santa Ceia"; // Próxima escala do user logado
+  const totalUserAtivos = 0; // Membros escalados nos próximos eventos
+  const totalCultos = 0;     // Total de cultos programados
+  const proximaEscala = "Nenhuma escala"; // Próxima escala do user logado
 
   useEffect(() => {
     if (escalaChartRef.current) {
