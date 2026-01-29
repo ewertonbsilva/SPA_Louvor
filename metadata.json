@@ -1,0 +1,7 @@
+{
+  "name": "SPA Louvor",
+  "description": "A sophisticated management platform for praise teams, featuring list, calendar, and cleaning views with a high-end UI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
